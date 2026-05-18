@@ -2,7 +2,7 @@
 
 > **Pergunta que este doc responde:** como saio do zero até o primeiro review rodando no meu projeto.
 >
-> **Versão:** MVP `v0.1.0` — Profile Pilot, Adapter Filesystem, Agente Security.
+> **Versão:** `v1.1.0` — Profile Pilot, Adapters Filesystem + Notion + HTTP, 6 Agentes.
 > Features marcadas com ⏳ estão em desenvolvimento (veja [IMPLEMENTATION_PLAN.md](../IMPLEMENTATION_PLAN.md)).
 
 ---
@@ -116,27 +116,67 @@ Adicionar outro? [s/n]
    /trust review-pr
 ```
 
-### Passo 3.3 — Criar os docs de grounding
+### Passo 3.3 — Gerar os docs de grounding
 
-No MVP, os grounding docs são criados manualmente a partir dos templates incluídos no framework.
-Copie e adapte para o contexto do seu time:
+Use o `/trust map codebase` para bootstrapar os grounding docs a partir do repo-alvo:
 
 ```bash
 cd ~/work/payments-team-trust
-mkdir -p grounding
+export TRUST_SETUP_PATH=~/work/payments-team-trust
 
-# Copiar templates (adapte os valores entre {{ }})
-cp ~/.trust/templates/grounding/06-security-policy.md grounding/
-cp ~/.trust/templates/checklists/security.checklist.md checklists/
+# Gerar rascunhos automáticos
+/trust map codebase --target api-payments
+# Gera _drafts/01-architecture.md, _drafts/03-api-contracts.md, etc.
 
-# Criar docs de arquitetura manualmente (ver fixtures de exemplo em tests/fixtures/mock-grounding/)
+# Revisar e editar os rascunhos (remova todos os TODO:)
+code grounding/_drafts/
+
+# Promover os rascunhos revisados para grounding/
+/trust approve-drafts --all
 ```
 
-O agente `security` precisa ao menos de `grounding/06-security-policy.md` e
-`checklists/security.checklist.md` para rodar sem HALT.
+Alternativamente, copie e adapte os templates incluídos:
 
-> ⏳ **v1.0:** `/trust map codebase` e `/trust approve-drafts` vão automatizar
-> a geração desses docs a partir do código existente.
+```bash
+cp ~/.trust/templates/grounding/06-security-policy.md grounding/
+cp ~/.trust/templates/checklists/security.checklist.md checklists/
+```
+
+### Passo 3.3b — Usar Notion ou Confluence como grounding (opcional)
+
+Se seu time já mantém a arquitetura no Notion ou Confluence, configure como source externa:
+
+```yaml
+# trust.config.yaml
+grounding:
+  sources:
+    - id: "notion-arch"
+      adapter: "notion"
+      auth:
+        token_env: "NOTION_TOKEN"    # Integration token do Notion
+      volatile: true
+      cache_ttl_minutes: 60
+
+    - id: "in-setup"
+      adapter: "filesystem"
+      base_path: "./grounding"
+      volatile: false
+
+  required:
+    - source: "notion-arch"
+      path: "page:abc123def456..."   # ID da página no Notion
+    - source: "in-setup"
+      path: "06-security-policy.md"
+```
+
+Tokens são sempre lidos de variáveis de ambiente — **nunca em YAML versionado**:
+
+```bash
+echo 'export NOTION_TOKEN=secret_...' >> ~/.zshrc
+# ou adicionar ao .env.local (gitignored)
+```
+
+Valide a conexão com `/trust doctor` antes de rodar o primeiro review.
 
 ### Passo 3.4 — Commitar e fazer push
 
@@ -255,17 +295,26 @@ O doctor valida:
 - ✓ Skills do framework presentes
 - ✓ Tokens (se houver) válidos
 
-### `/trust map codebase` — bootstrap em repos novos ⏳ v1.0
+### `/trust map codebase` — bootstrap em repos novos
 
-Quando adicionar um novo repo-alvo ao setup, o bootstrap manual por ora é:
+Quando adicionar um novo repo-alvo ao setup:
 
 ```bash
-cd ~/work/payments-team-trust
-# Criar manualmente o target.yaml para o novo repo (veja templates/target.yaml.template)
-# Criar/adaptar os grounding docs específicos desse repo
+/trust map codebase --target novo-repo
+# Gera rascunhos em grounding/_drafts/
+
+/trust approve-drafts --all
+# Promove rascunhos sem TODO para grounding/
 ```
 
-> ⏳ **v1.0:** `/trust target add` e `/trust map codebase` automatizarão este passo.
+### `/trust runs` — inspecionar histórico de reviews
+
+```bash
+/trust runs list                    # últimas 10 runs
+/trust runs list --status halted    # somente runs com HALT
+/trust runs show feat-PAY-123-abc   # detalhe de uma run
+/trust runs clean --older-than 30   # remover runs antigas
+```
 
 ### `/trust cleanup <run-id>` — limpar runs antigas
 

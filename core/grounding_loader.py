@@ -38,6 +38,73 @@ def _extract_sections(content: str) -> list[str]:
     return anchors
 
 
+def _load_from_notion(
+    source: SourceConfig,
+    doc_path: str,
+    cache_dir: Path | None = None,
+) -> GroundingDoc:
+    """Load a document from the Notion adapter."""
+    from adapters.notion_adapter import NotionAdapter
+    from core.source_cache import SourceCache
+
+    auth = getattr(source, "auth", {}) or {}
+    token_env = auth.get("token_env", "NOTION_TOKEN")
+    ttl = getattr(source, "cache_ttl_minutes", 60)
+
+    cache = None
+    if cache_dir is not None:
+        cache = SourceCache(cache_dir, ttl_minutes=ttl)
+
+    adapter = NotionAdapter(token_env=token_env, cache=cache, volatile=source.volatile)
+    doc = adapter.read(doc_path, source_id=source.id)
+
+    return GroundingDoc(
+        source_id=source.id,
+        path=doc_path,
+        content=doc.content,
+        sha256=doc.sha256,
+        bytes_read=len(doc.content.encode("utf-8")),
+        sections=_extract_sections(doc.content),
+        volatile=source.volatile,
+    )
+
+
+def _load_from_http(
+    source: SourceConfig,
+    doc_path: str,
+    cache_dir: Path | None = None,
+) -> GroundingDoc:
+    """Load a document from the HTTP adapter."""
+    from adapters.http_adapter import HttpAdapter
+    from core.source_cache import SourceCache
+
+    auth = getattr(source, "auth", {}) or {}
+    base_url = getattr(source, "base_url", "") or ""
+    ttl = getattr(source, "cache_ttl_minutes", 60)
+
+    cache = None
+    if cache_dir is not None:
+        cache = SourceCache(cache_dir, ttl_minutes=ttl)
+
+    adapter = HttpAdapter(
+        base_url=base_url,
+        auth_config=auth,
+        cache=cache,
+        volatile=source.volatile,
+    )
+    doc = adapter.read(doc_path, source_id=source.id)
+
+    return GroundingDoc(
+        source_id=source.id,
+        path=doc_path,
+        content=doc.content,
+        sha256=doc.sha256,
+        bytes_read=len(doc.content.encode("utf-8")),
+        sections=_extract_sections(doc.content),
+        volatile=source.volatile,
+    )
+
+
 def _load_from_filesystem(
     source: SourceConfig,
     doc_path: str,
@@ -85,6 +152,7 @@ def _load_from_filesystem(
 def load_grounding(
     config: TrustConfig,
     setup_path: Path,
+    cache_dir: Path | None = None,
 ) -> GroundingManifest:
     """Load all required grounding documents.
 
@@ -113,12 +181,17 @@ def load_grounding(
         try:
             if source.adapter == "filesystem":
                 doc = _load_from_filesystem(source, req.path, setup_path)
+            elif source.adapter == "notion":
+                _cache_dir = cache_dir or (setup_path / ".trust-cache")
+                doc = _load_from_notion(source, req.path, _cache_dir)
+            elif source.adapter == "http":
+                _cache_dir = cache_dir or (setup_path / ".trust-cache")
+                doc = _load_from_http(source, req.path, _cache_dir)
             else:
-                # Adapters for notion/http are v1.1+
                 raise GroundingError(
-                    f"Adapter '{source.adapter}' is not available in this version. "
-                    f"Only 'filesystem' is supported in MVP. "
-                    f"Notion and HTTP adapters land in v1.1."
+                    f"Unknown adapter '{source.adapter}'. "
+                    f"Supported: 'filesystem', 'notion', 'http'.\n"
+                    f"  Next action: fix adapter value in trust.config.yaml"
                 )
 
             # Sanity check: docs that are too small are likely stubs
@@ -143,8 +216,17 @@ def load_grounding(
 def validate_grounding_dod(
     manifest: GroundingManifest,
     min_total_bytes: int = 5000,
+    previous_sha_map: dict[str, str] | None = None,
 ) -> tuple[bool, list[str]]:
     """Validate the Definition of Done for Phase 1.
+
+    Args:
+        manifest:         Loaded grounding manifest.
+        min_total_bytes:  Minimum total bytes across all docs.
+        previous_sha_map: Optional dict of {source_id:path -> sha256} from a
+                          previous run. Non-volatile sources that changed will
+                          emit a warning (not an error — intentional edits are fine).
+                          Volatile sources never trigger errors on hash mismatch.
 
     Returns:
         (ok, errors) — ok is True only if all DoD criteria pass.
@@ -165,5 +247,22 @@ def validate_grounding_dod(
 
     if not manifest.docs:
         errors.append("No grounding documents loaded at all.")
+
+    # Volatile sources: warn on hash change, never error
+    if previous_sha_map:
+        for doc in manifest.docs:
+            key = f"{doc.source_id}:{doc.path}"
+            prev_sha = previous_sha_map.get(key)
+            if prev_sha and prev_sha != doc.sha256:
+                if doc.volatile:
+                    print(
+                        f"  ℹ  Volatile source changed: {key} "
+                        f"(sha changed — expected for Notion/HTTP sources)"
+                    )
+                else:
+                    print(
+                        f"  ⚠  Non-volatile source changed: {key} "
+                        f"(sha changed since last run — intentional?)"
+                    )
 
     return len(errors) == 0, errors

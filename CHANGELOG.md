@@ -6,6 +6,52 @@ Format: [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [1.1.0] — 2026-05-18
+
+### v1.1 — Sources & UX
+
+External grounding sources (Notion, HTTP/Confluence), disk cache with TTL,
+progress reporter, run history command, and actionable error messages.
+
+**New adapters:**
+- `adapters/notion_adapter.py` — Reads Notion pages and databases via API v1
+  - Converts Notion blocks to Markdown (paragraph, headings, code, lists, tables, …)
+  - Handles pagination (up to 500 blocks per page)
+  - Extracts page IDs from bare IDs, `page:<id>`, `db:<id>`, or full Notion URLs
+- `adapters/http_adapter.py` — Reads HTTP/HTTPS endpoints with auth
+  - Supports `bearer`, `basic`, and custom header auth (all via env vars)
+  - Normalises `text/html` → plain text, `application/json` → Markdown
+  - All errors include `Next action:` hints
+
+**New core modules:**
+- `core/source_cache.py` — Disk-backed TTL cache for external sources
+  - Default TTL: 60 min, configurable per source with `cache_ttl_minutes`
+  - Keyed by `(source_id, doc_path)` hash, stored under `.trust-cache/`
+  - Methods: `get`, `put`, `invalidate`, `clear_source`, `stats`
+- `core/progress_reporter.py` — Terminal progress bar for pipeline phases
+  - Phase context manager with `step()` and `message()` calls
+  - ANSI bar on supporting terminals; plain text fallback for CI
+  - Phases faster than 1s suppressed by default (no flicker)
+  - `summary()` prints per-phase timing table
+
+**grounding_loader.py updates:**
+- Added `notion` and `http` adapter dispatch in `load_grounding()`
+- `validate_grounding_dod()` accepts `previous_sha_map` to detect changes
+- Volatile sources: hash change emits info, never triggers errors
+- Non-volatile sources: hash change emits warning, never triggers errors
+
+**New slash command:**
+- `commands/trust-runs.md` — `/trust runs list/show/clean`
+
+**Documentation:**
+- `docs/02-arquitetura.md` — New sections on external adapters, cache, and UX
+- `docs/03-onboarding.md` — Updated to v1.1; added Notion/Confluence setup guide
+
+**Tests:**
+- `tests/e2e/test_v1_1.py` — 28 tests covering all new components (100% offline)
+
+---
+
 ## [1.0.0] — 2026-05-17
 
 ### v1.0 — Pilot Ready

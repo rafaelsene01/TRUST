@@ -265,13 +265,39 @@ class GroundingAdapter(ABC):
     def health_check(self, source_config: dict) -> HealthStatus: ...
 ```
 
-Adapters incluídos no MVP:
+Adapters disponíveis:
 
-- **`filesystem`** — lê de disco (in-repo, second brain, pasta sincronizada)
-- **`notion`** — lê páginas e databases do Notion
-- **`http`** — lê de Confluence, GitLab Wiki, URLs autenticadas
+| Adapter | Quando usar | Disponível desde |
+| --- | --- | --- |
+| `filesystem` | Docs em disco — in-repo, second brain, pasta sincronizada | MVP |
+| `notion` | Páginas e databases do Notion via API | v1.1 |
+| `http` | Confluence, GitLab Wiki, qualquer endpoint autenticado | v1.1 |
 
-Sources podem ser marcadas como **volatile** (hash não bloqueia HALT) para conteúdos que mudam frequentemente como o second brain do dev.
+**Sources externas (notion/http) têm cache automático** em `.trust-cache/` no setup repo.
+O TTL padrão é 60 minutos — configurável com `cache_ttl_minutes` por source.
+
+```yaml
+grounding:
+  sources:
+    - id: "confluence"
+      adapter: "http"
+      base_url: "https://wiki.empresa.com/api/v2"
+      auth:
+        type: "bearer"
+        token_env: "CONFLUENCE_TOKEN"
+      volatile: true
+      cache_ttl_minutes: 120
+
+    - id: "notion-arch"
+      adapter: "notion"
+      auth:
+        token_env: "NOTION_TOKEN"
+      volatile: true
+      cache_ttl_minutes: 60
+```
+
+Sources marcadas como **`volatile: true`** (hash muda frequentemente, como Notion) nunca disparam
+HALT em caso de mudança de conteúdo entre runs — apenas emitem um aviso informativo.
 
 ---
 
@@ -342,5 +368,43 @@ Cada execução do `/trust review-pr` cria uma pasta:
 A política padrão recomendada é `audit_failures_only` — só halts ficam versionados.
 
 ---
+
+---
+
+## 6. UX e observabilidade (v1.1)
+
+### Progress reporter
+
+O `core/progress_reporter.py` mostra uma barra de progresso por fase durante a execução.
+Fases mais rápidas que 1 segundo não mostram barra (evita flicker em runs rápidas).
+
+```
+  ✅ Trigger          (0.3s)
+  ✅ Grounding        [████████████████████████] 100%  (1.2s)
+  ✅ Agents           [████████████████░░░░░░░░]  67%  4m18s  Loading security...
+```
+
+Em ambientes sem suporte ANSI (CI, terminais dumb), o reporter cai graciosamente para
+texto simples.
+
+### Mensagens de erro acionáveis
+
+Todo erro do framework inclui uma linha `Next action:` explícita:
+
+```
+✗ Bearer token env var 'CONFLUENCE_TOKEN' is not set or empty.
+  → Next action: export CONFLUENCE_TOKEN=<your-token> in your shell,
+    or add it to .env.local
+```
+
+Isso aplica a: adapters externos, configuração inválida, HALT de DoD, erros de rede.
+
+### Histórico de runs (`/trust runs`)
+
+```
+/trust runs list             # últimas 10 runs
+/trust runs show <run-id>    # inspecionar uma run específica
+/trust runs clean --older-than 30  # limpar runs antigas
+```
 
 **Próximo:** [docs/03-onboarding.md](03-onboarding.md) — instalação, init, doctor, primeiro review na prática.
