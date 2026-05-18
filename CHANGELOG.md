@@ -6,6 +6,47 @@ Format: [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [1.2.0] — 2026-05-18
+
+### v1.2 — Rastreabilidade
+
+Phase 6 is now fully operational. Every finding in `REVIEW.md` can be linked
+back to the Jira ticket (or local spec file) that originated the change.
+
+**New core modules:**
+- `core/spec_parser.py` — Parses `.spec.md` files with YAML frontmatter
+  - Extracts `ticket_id`, `title`, `components`, `labels`, `acceptance_criteria`
+  - `find_spec_for_ticket(spec_dir, ticket_id)` — canonical filename + frontmatter scan
+  - Stdlib only (no PyYAML dependency); handles quoted values and inline lists
+- `core/traceability.py` — Orchestrates Phase 6 end-to-end
+  - Branch → ticket ID (via `branch_pattern` or default fallback)
+  - Resolution order: local spec file → Jira API → `not_found` stub
+  - Never raises: all errors captured in `TraceabilityResult.warning`
+  - Annotates every finding with a `traced_to` block
+
+**`core/jira_integration.py` (already in v1.2 scope):**
+- `JiraClient.get_ticket()` → `JiraTicket | JiraError`
+- ADF-to-text conversion for Jira Cloud descriptions
+- Branch-pattern extraction with `{ticket}` placeholder and fallback regex
+
+**Orchestrator updates (`core/orchestrator.py`):**
+- `_run_phase_6_traceability()` — real Phase 6 (replaces skip-only stub)
+- `_run_phase_7_output()` now accepts `traceability_report` and renders a
+  ticket header block (title, status, components, AC) in `REVIEW.md`
+- `run_review()` routes to real Phase 6 when `traceability.enabled: true`
+
+**New slash command:**
+- `commands/trust-trace.md` — `/trust trace check [<branch>]` and
+  `/trust trace show [<branch>]`
+
+**New template:**
+- `templates/spec.md.template` — canonical spec file layout with frontmatter
+
+**Tests:**
+- `tests/e2e/test_v1_2.py` — 40 tests covering all new components (100% offline)
+
+---
+
 ## [1.1.0] — 2026-05-18
 
 ### v1.1 — Sources & UX

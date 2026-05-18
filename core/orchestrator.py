@@ -305,11 +305,57 @@ def _run_phase_6_traceability_skip(
     print("  ⏭  Phase 6 skipped: traceability not configured")
 
 
+def _run_phase_6_traceability(
+    manifest: RunManifest,
+    run_dir: Path,
+    branch: str,
+    findings: list[dict],
+    traceability_cfg: dict,
+    setup_path: Path,
+) -> list[dict]:
+    """Phase 6: Traceability — resolve ticket and annotate findings."""
+    from .traceability import run_traceability
+
+    phase = mark_phase_start(manifest, 6, run_dir)
+
+    result = run_traceability(
+        branch=branch,
+        findings=findings,
+        traceability_cfg=traceability_cfg,
+        setup_path=setup_path,
+    )
+
+    report: dict = {
+        "skipped": False,
+        "ok": result.ok,
+        "ticket_id": result.ticket_id,
+        "traced_to": result.traced_to.to_dict() if result.traced_to else None,
+        "warning": result.warning,
+    }
+    (run_dir / "traceability.json").write_text(
+        json.dumps(report, indent=2), encoding="utf-8"
+    )
+
+    if result.ok:
+        mark_phase_done(manifest, phase, run_dir, artifact="traceability.json")
+        t = result.traced_to
+        print(
+            f"  ✅ Phase 6 done: {t.ticket_id} — {t.title!r} "
+            f"[{t.source}]"
+        )
+    else:
+        mark_phase_skipped(manifest, phase, run_dir, reason=result.warning or "not resolved")
+        print(f"  ⚠  Phase 6 warning: {result.warning}")
+
+    return result.annotated_findings
+
+
 def _run_phase_7_output(
     manifest: RunManifest,
     run_dir: Path,
     branch: str,
     output_path: Path,
+    traceability_report: dict | None = None,
 ) -> Path:
     """Phase 7: Output — assemble final REVIEW.md."""
     phase = mark_phase_start(manifest, 7, run_dir)
@@ -341,6 +387,44 @@ def _run_phase_7_output(
         f"# TRUST Review — `{branch}`",
         f"\n> **Run ID:** `{manifest.run_id}`",
         f"> **Target:** `{manifest.target_id}`",
+    ]
+
+    # Traceability block (when resolved)
+    if traceability_report and not traceability_report.get("skipped"):
+        traced = traceability_report.get("traced_to")
+        if traced and traced.get("source") not in (None, "not_found"):
+            ticket_id = traced.get("ticket_id", "")
+            ticket_title = traced.get("title", "")
+            ticket_url = traced.get("url", "")
+            ticket_status = traced.get("status", "")
+            ticket_components = ", ".join(traced.get("components", []))
+            ac = traced.get("acceptance_criteria", "")
+            source = traced.get("source", "")
+
+            url_part = f" — [{ticket_id}]({ticket_url})" if ticket_url else f" — {ticket_id}"
+            lines += [
+                f"> **Ticket:**{url_part} {ticket_title}",
+                f"> **Status:** {ticket_status}" + (
+                    f"  **Components:** {ticket_components}" if ticket_components else ""
+                ),
+                f"> **Source:** `{source}`",
+            ]
+            if ac:
+                lines += [
+                    "",
+                    "<details>",
+                    "<summary>📋 Acceptance Criteria</summary>",
+                    "",
+                    ac,
+                    "",
+                    "</details>",
+                ]
+        elif traceability_report.get("warning"):
+            lines.append(
+                f"\n> ⚠️  **Rastreabilidade:** {traceability_report['warning']}"
+            )
+
+    lines += [
         "\n---",
         "\n⚠️  **The AI never approves or rejects this PR. All decisions are yours.**",
         "\n---\n",
@@ -610,12 +694,27 @@ def run_review(
             f"{len(hallucinations)} hallucinations intercepted"
         )
 
-        # --- Phase 6: Traceability (skip in MVP) ---
+        # --- Phase 6: Traceability ---
         raw_config = config.raw
-        traceability_enabled = (
-            raw_config.get("traceability", {}).get("enabled", False)
-        )
-        if not traceability_enabled:
+        traceability_cfg = raw_config.get("traceability", {})
+        traceability_enabled = traceability_cfg.get("enabled", False)
+
+        traceability_report: dict | None = None
+        if traceability_enabled:
+            validated_findings = _run_phase_6_traceability(
+                manifest, run_dir, feature_branch, validated,
+                traceability_cfg, setup_path,
+            )
+            # Read back the report for phase 7 header
+            trace_file = run_dir / "traceability.json"
+            if trace_file.exists():
+                traceability_report = json.loads(trace_file.read_text(encoding="utf-8"))
+            # Use annotated findings for phase 7
+            gate_data["passed"] = validated_findings
+            (run_dir / "gate.report.json").write_text(
+                json.dumps(gate_data, indent=2), encoding="utf-8"
+            )
+        else:
             _run_phase_6_traceability_skip(manifest, run_dir)
 
         # --- Phase 7: Output ---
@@ -630,7 +729,8 @@ def run_review(
             / "REVIEW.md"
         )
         review_path = _run_phase_7_output(
-            manifest, run_dir, feature_branch, output_path
+            manifest, run_dir, feature_branch, output_path,
+            traceability_report=traceability_report,
         )
 
         # --- Finalise ---

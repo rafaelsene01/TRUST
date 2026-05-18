@@ -1,0 +1,39 @@
+---
+ticket_id: PROJECT-000
+title: "Short description of the feature or fix"
+type: story
+status: in-progress
+jira_url: https://empresa.atlassian.net/browse/PROJECT-000
+components:
+  - component-name
+labels:
+  - label-name
+---
+
+## Summary
+
+<!-- One paragraph describing the purpose of this change. -->
+
+What problem does this solve? Who is affected?
+
+## Context
+
+<!-- Background information, links to related tickets, architecture decisions. -->
+
+## Acceptance Criteria
+
+- [ ] Given [context], when [action], then [outcome]
+- [ ] Given [context], when [action], then [outcome]
+- [ ] Given [context], when [action], then [outcome]
+
+## Out of Scope
+
+<!-- Explicitly list what is NOT included in this ticket. -->
+
+## Technical Notes
+
+<!-- Implementation hints, constraints, dependencies. -->
+
+## References
+
+<!-- Links to design docs, Confluence pages, prior art. -->
