@@ -346,7 +346,7 @@ def test_review_md_generated(run_dir: Path) -> None:
     review = run_dir / "REVIEW.md"
     assert review.exists(), "REVIEW.md not generated"
 
-    content = review.read_text()
+    content = review.read_text(encoding="utf-8")
     assert "TRUST Review" in content
     assert "AI never approves or rejects" in content.replace("\n", " ")
     assert "SEC-007" in content or "SEC-001" in content
