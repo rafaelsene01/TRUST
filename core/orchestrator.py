@@ -148,8 +148,8 @@ def capture_diff(base_branch: str, feature_branch: str, cwd: Path) -> str:
 
 def parse_diff(diff_text: str) -> list[dict]:
     """Parse unified diff into a list of file dicts."""
-    files = []
-    current_file = None
+    files: list[dict] = []
+    current_file: dict | None = None
 
     for line in diff_text.splitlines():
         if line.startswith("diff --git"):
@@ -179,8 +179,7 @@ def _run_phase_0_trigger(
     diff_files: list[dict],
 ) -> None:
     """Phase 0: Trigger — write diff summary to run dir."""
-    phase = manifest.get_phase(0)
-    mark_phase_start(manifest, 0, run_dir)
+    phase = mark_phase_start(manifest, 0, run_dir)
 
     # Persist diff to run dir for agents to read
     (run_dir / "diff.patch").write_text(diff_text, encoding="utf-8")
@@ -259,7 +258,7 @@ def _run_phase_4_precision_gate(
     """Phase 4: Precision Gate — filter findings by confidence threshold."""
     phase = mark_phase_start(manifest, 4, run_dir)
 
-    all_findings = []
+    all_findings: list[dict] = []
     for findings_file in agents_dir.glob("*.findings.json"):
         try:
             data = json.loads(findings_file.read_text(encoding="utf-8"))
@@ -339,6 +338,7 @@ def _run_phase_6_traceability(
     if result.ok:
         mark_phase_done(manifest, phase, run_dir, artifact="traceability.json")
         t = result.traced_to
+        assert t is not None
         print(
             f"  ✅ Phase 6 done: {t.ticket_id} — {t.title!r} "
             f"[{t.source}]"

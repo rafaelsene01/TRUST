@@ -3,9 +3,10 @@
 > **Trustable Reviews via Universal Skills & Tooling**
 > *O review de IA em que dá pra confiar.*
 
-[![Profile](https://img.shields.io/badge/profile-pilot-orange)](docs/01-conceitos.md#profiles)
+[![Version](https://img.shields.io/badge/version-v2.1.0-blue)](CHANGELOG.md)
+[![Tests](https://img.shields.io/badge/tests-182%20passing-brightgreen)](tests/)
 [![Spec](https://img.shields.io/badge/spec-agentskills.io-blue)](https://agentskills.io/specification)
-[![Status](https://img.shields.io/badge/status-MVP%20shipped-brightgreen)](CHANGELOG.md)
+[![Status](https://img.shields.io/badge/status-stable-brightgreen)](CHANGELOG.md)
 
 TRUST é um **framework de review de Pull Requests com agentes de IA**, baseado em sete pilares que separam um review confiável de um que devs ignoram. Ele roda local no Claude Code, é agnóstico de stack, e vive **desacoplado do repo do produto**.
 
@@ -106,9 +107,9 @@ Estes princípios estão no DNA do framework. Mudanças que violem qualquer um d
 
 ## Status atual
 
-✅ **MVP shipped (`v0.1.0-mvp`).** Pipeline end-to-end funcional com o agente de segurança. Veja o [CHANGELOG](CHANGELOG.md) para o que está incluído e o [plano de implementação](IMPLEMENTATION_PLAN.md) para os próximos marcos.
+✅ **v2.1.0 — Learning Loop.** Framework completo com 6 agentes especialistas, 8 fases de pipeline, 4 profiles de deploy e loop de aprendizado automático. 182 testes passando. Veja o [CHANGELOG](CHANGELOG.md) para o histórico completo de versões.
 
-**Próximo marco:** v1.0 — 5 agentes restantes + Second Pass + Meta-Review completo.
+**Próximo passo:** rodar o piloto real em um time e coletar feedback para calibração dos thresholds.
 
 ---
 

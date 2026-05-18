@@ -154,7 +154,6 @@ class PhaseProgress:
             self._record.steps_done = self._record.steps_total
             self._record.finish("done")
         self._reporter._render_final(self._record)
-        return False
 
 
 # ---------------------------------------------------------------------------
