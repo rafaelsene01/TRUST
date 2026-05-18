@@ -32,3 +32,7 @@ trust-reviews/
 
 # Test artifacts
 /tmp/
+
+# Local planning docs (stays local, not in repo)
+PROJECT_HANDOFF.md
+**/SKILL_COMPLETION_PLAN.md
