@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "$id": "https://trust-framework.io/schemas/second-pass.json",
+  "title": "TRUST Second Pass Report — Security Agent",
+  "description": "Output of the Second Pass phase. Lists every hunk the agent reviewed but did NOT turn into a finding, with mandatory justification. See references/SECOND_PASS.md for the full protocol.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "agent",
+    "run_id",
+    "hunks_total",
+    "hunks_with_finding",
+    "hunks_explicitly_cleared",
+    "hunks_unaccounted",
+    "non_findings"
+  ],
+  "properties": {
+    "agent": {
+      "type": "string",
+      "description": "Fixed value: 'security'.",
+      "const": "security"
+    },
+    "run_id": {
+      "type": "string",
+      "description": "UUID from the run-manifest. Links this report to its run."
+    },
+    "hunks_total": {
+      "type": "integer",
+      "description": "Total number of @@ hunks in the diff for files in this agent's domain.",
+      "minimum": 0
+    },
+    "hunks_with_finding": {
+      "type": "integer",
+      "description": "Hunks for which at least one finding was emitted. Must match findings count by hunk.",
+      "minimum": 0
+    },
+    "hunks_explicitly_cleared": {
+      "type": "integer",
+      "description": "Hunks with no finding but with a reason in non_findings[]. Must equal len(non_findings).",
+      "minimum": 0
+    },
+    "hunks_unaccounted": {
+      "type": "integer",
+      "description": "Hunks that are neither in findings nor cleared. MUST be 0 — any non-zero value triggers HALT.",
+      "minimum": 0,
+      "maximum": 0
+    },
+    "non_findings": {
+      "type": "array",
+      "description": "One entry for every hunk that had no finding. See references/SECOND_PASS.md for valid reason_not_reported values.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "hunk_id",
+          "file",
+          "line_start",
+          "line_end",
+          "reason_not_reported"
+        ],
+        "properties": {
+          "hunk_id": {
+            "type": "string",
+            "description": "Unique identifier for the hunk. Format: '<file>:<line_start>-<line_end>'.",
+            "pattern": "^.+:\\d+-\\d+$"
+          },
+          "file": {
+            "type": "string",
+            "description": "Relative path from the repo root, using forward slashes."
+          },
+          "line_start": {
+            "type": "integer",
+            "description": "First line of the hunk in the new file (from the @@ header). 1-indexed.",
+            "minimum": 1
+          },
+          "line_end": {
+            "type": "integer",
+            "description": "Last line of the hunk in the new file. >= line_start.",
+            "minimum": 1
+          },
+          "reason_not_reported": {
+            "type": "string",
+            "description": "Mandatory justification. Use the standard vocabulary from assets/non-finding-reasons.md. Must be non-empty.",
+            "minLength": 10
+          }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "agent": "security",
+      "run_id": "550e8400-e29b-41d4-a716-446655440000",
+      "hunks_total": 5,
+      "hunks_with_finding": 2,
+      "hunks_explicitly_cleared": 3,
+      "hunks_unaccounted": 0,
+      "non_findings": [
+        {
+          "hunk_id": "src/utils/date.ts:10-24",
+          "file": "src/utils/date.ts",
+          "line_start": 10,
+          "line_end": 24,
+          "reason_not_reported": "Out of domain: changes are purely date formatting logic with no security-relevant surface (no input validation, no DB access, no auth)."
+        },
+        {
+          "hunk_id": "src/api/users.ts:88-102",
+          "file": "src/api/users.ts",
+          "line_start": 88,
+          "line_end": 102,
+          "reason_not_reported": "Confidence below threshold: the query builder method `buildUserFilter` may or may not use parameterization internally; confidence 0.65 is below the 0.80 threshold. Not emitted."
+        },
+        {
+          "hunk_id": "src/auth/session.ts:55-67",
+          "file": "src/auth/session.ts",
+          "line_start": 55,
+          "line_end": 67,
+          "reason_not_reported": "Already reported: the same secret-in-log pattern (SEC-002) was already emitted as a finding for src/auth/login.ts in this run. This hunk is an identical duplicate."
+        }
+      ]
+    }
+  ]
+}

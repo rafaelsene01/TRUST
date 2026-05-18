@@ -1,0 +1,273 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "$id": "https://trust-framework.io/schemas/dod-attestation.json",
+  "title": "TRUST DoD Attestation — Security Agent",
+  "description": "Self-attestation block the security agent MUST fill at the end of every execution. Written to <run-dir>/agents/security.dod.json. See references/DOD.md for field-by-field rules.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "agent",
+    "agent_version",
+    "run_id",
+    "timestamp",
+    "dod"
+  ],
+  "properties": {
+    "agent": {
+      "type": "string",
+      "description": "Fixed value: 'security'.",
+      "const": "security"
+    },
+    "agent_version": {
+      "type": "string",
+      "description": "SemVer of the skill. From SKILL.md frontmatter metadata.agent_version.",
+      "example": "1.0.0"
+    },
+    "run_id": {
+      "type": "string",
+      "description": "UUID assigned by the orchestrator for this run. From run-manifest."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 UTC timestamp of when the attestation was written."
+    },
+    "dod": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "grounding",
+        "checklist",
+        "coverage",
+        "findings",
+        "self_check_passed",
+        "halt_required"
+      ],
+      "properties": {
+        "grounding": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["loaded", "docs_read", "missing_required"],
+          "properties": {
+            "loaded": {
+              "type": "boolean",
+              "description": "true if ALL required grounding docs were successfully loaded."
+            },
+            "docs_read": {
+              "type": "array",
+              "description": "One entry per loaded grounding doc.",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["path", "sha256", "sections_indexed"],
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "description": "Relative path within the grounding source (e.g. '06-security-policy.md')."
+                  },
+                  "sha256": {
+                    "type": "string",
+                    "description": "Hex SHA-256 of the file content. Computed via hashlib.sha256."
+                  },
+                  "sections_indexed": {
+                    "type": "integer",
+                    "description": "Number of Markdown headings parsed as section anchors.",
+                    "minimum": 0
+                  }
+                }
+              }
+            },
+            "missing_required": {
+              "type": "array",
+              "description": "Paths of required docs that failed to load. MUST be empty to pass DoD.",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "checklist": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["loaded", "rules_in_checklist_total", "rules_with_valid_source"],
+          "properties": {
+            "loaded": {
+              "type": "boolean",
+              "description": "true if security.checklist.md was parsed without errors."
+            },
+            "rules_in_checklist_total": {
+              "type": "integer",
+              "description": "Count of distinct rule_id declarations in the checklist.",
+              "minimum": 1
+            },
+            "rules_with_valid_source": {
+              "type": "integer",
+              "description": "Count of rules whose source resolves to an existing grounding section. Must equal rules_in_checklist_total.",
+              "minimum": 0
+            }
+          }
+        },
+        "coverage": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "diff_files_total",
+            "files_in_domain_total",
+            "files_in_domain_evaluated",
+            "files_in_domain_evaluated_pct",
+            "rules_evaluated_total",
+            "rules_evaluated_pct",
+            "coverage_matrix_complete",
+            "not_applicable_with_justification_pct"
+          ],
+          "properties": {
+            "diff_files_total": {
+              "type": "integer",
+              "description": "Total files in the PR diff (all agents).",
+              "minimum": 0
+            },
+            "files_in_domain_total": {
+              "type": "integer",
+              "description": "Files in diff that match this agent's file_patterns.",
+              "minimum": 0
+            },
+            "files_in_domain_evaluated": {
+              "type": "integer",
+              "description": "Files actually evaluated. MUST equal files_in_domain_total.",
+              "minimum": 0
+            },
+            "files_in_domain_evaluated_pct": {
+              "type": "integer",
+              "description": "Percentage evaluated. MUST be 100 to pass DoD.",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "rules_evaluated_total": {
+              "type": "integer",
+              "description": "Rules that appear in coverage matrix. Must equal rules_in_checklist_total.",
+              "minimum": 0
+            },
+            "rules_evaluated_pct": {
+              "type": "integer",
+              "description": "Percentage of rules covered. MUST be 100 to pass DoD.",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "coverage_matrix_complete": {
+              "type": "boolean",
+              "description": "true only if every (rule x file) pair has a verdict."
+            },
+            "not_applicable_with_justification_pct": {
+              "type": "integer",
+              "description": "% of N/A verdicts that include a non-empty reason. MUST be 100.",
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        },
+        "findings": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "emitted",
+            "every_finding_has_rule_id",
+            "every_finding_has_rule_source",
+            "every_finding_has_evidence_quote",
+            "every_finding_has_confidence",
+            "every_finding_confidence_gte_080",
+            "every_evidence_quote_literal"
+          ],
+          "properties": {
+            "emitted": {
+              "type": "integer",
+              "description": "Number of findings written to security.findings.json.",
+              "minimum": 0
+            },
+            "every_finding_has_rule_id": {
+              "type": "boolean",
+              "description": "true if all emitted findings have a non-null rule_id."
+            },
+            "every_finding_has_rule_source": {
+              "type": "boolean",
+              "description": "true if all emitted findings have a non-null rule_source."
+            },
+            "every_finding_has_evidence_quote": {
+              "type": "boolean",
+              "description": "true if all emitted findings have a non-empty evidence_quote."
+            },
+            "every_finding_has_confidence": {
+              "type": "boolean",
+              "description": "true if all emitted findings have a numeric confidence field."
+            },
+            "every_finding_confidence_gte_080": {
+              "type": "boolean",
+              "description": "true if every confidence value is >= 0.80."
+            },
+            "every_evidence_quote_literal": {
+              "type": "boolean",
+              "description": "true if every evidence_quote appears verbatim (character-by-character) in the diff. Verified by check_evidence_literal.py."
+            }
+          }
+        },
+        "self_check_passed": {
+          "type": "boolean",
+          "description": "true only if halt_required is false. The orchestrator reads this field first."
+        },
+        "halt_required": {
+          "type": "boolean",
+          "description": "true if any DoD criterion failed. Triggers orchestrator HALT."
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "agent": "security",
+      "agent_version": "1.0.0",
+      "run_id": "550e8400-e29b-41d4-a716-446655440000",
+      "timestamp": "2026-05-18T14:32:00Z",
+      "dod": {
+        "grounding": {
+          "loaded": true,
+          "docs_read": [
+            {
+              "path": "06-security-policy.md",
+              "sha256": "a3f1b2c4d5e6f7890123456789abcdef0123456789abcdef0123456789abcdef01",
+              "sections_indexed": 8
+            },
+            {
+              "path": "05-conventions.md",
+              "sha256": "b4c2d3e4f5061728394a5b6c7d8e9f0011223344556677889900aabbccddeeff",
+              "sections_indexed": 6
+            }
+          ],
+          "missing_required": []
+        },
+        "checklist": {
+          "loaded": true,
+          "rules_in_checklist_total": 12,
+          "rules_with_valid_source": 12
+        },
+        "coverage": {
+          "diff_files_total": 8,
+          "files_in_domain_total": 8,
+          "files_in_domain_evaluated": 8,
+          "files_in_domain_evaluated_pct": 100,
+          "rules_evaluated_total": 12,
+          "rules_evaluated_pct": 100,
+          "coverage_matrix_complete": true,
+          "not_applicable_with_justification_pct": 100
+        },
+        "findings": {
+          "emitted": 2,
+          "every_finding_has_rule_id": true,
+          "every_finding_has_rule_source": true,
+          "every_finding_has_evidence_quote": true,
+          "every_finding_has_confidence": true,
+          "every_finding_confidence_gte_080": true,
+          "every_evidence_quote_literal": true
+        },
+        "self_check_passed": true,
+        "halt_required": false
+      }
+    }
+  ]
+}

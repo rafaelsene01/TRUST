@@ -1,0 +1,34 @@
+diff --git a/src/auth/login.ts b/src/auth/login.ts
+index abc1234..def5678 100644
+--- a/src/auth/login.ts
++++ b/src/auth/login.ts
+@@ -1,10 +1,15 @@
+ import { Injectable } from '@nestjs/common';
+ import { InjectRepository } from '@nestjs/typeorm';
++import { db } from '../database/connection';
+ 
+ @Injectable()
+ export class AuthService {
++  async login(email: string, password: string) {
++    // TODO: validate input
++    const user = await db.query(`SELECT * FROM users WHERE email='${email}'`);
++    if (!user) throw new Error(`User not found: ${email}`);
++    console.log(`Login attempt for ${email} with password ${password}`);
++    return user;
++  }
+ }
+diff --git a/src/users/users.service.ts b/src/users/users.service.ts
+index 111aaaa..222bbbb 100644
+--- a/src/users/users.service.ts
++++ b/src/users/users.service.ts
+@@ -1,5 +1,12 @@
+ import { Injectable } from '@nestjs/common';
+ 
++const API_KEY = 'sk-prod-1234567890abcdef';
++
+ @Injectable()
+ export class UsersService {
++  async getUser(id: string) {
++    return this.repository.findOne({ where: { id } });
++  }
+ }

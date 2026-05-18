@@ -1,0 +1,134 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "$id": "https://trust-framework.io/schemas/finding.json",
+  "title": "TRUST Finding",
+  "description": "Canonical schema for a single finding emitted by any TRUST specialist agent. See references/FINDING_FORMAT.md for field-by-field rules.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "agent",
+    "rule_id",
+    "rule_source",
+    "file",
+    "line_start",
+    "line_end",
+    "severity",
+    "confidence",
+    "claim",
+    "evidence_quote",
+    "why_it_matters",
+    "suggestion",
+    "false_positive_risk",
+    "false_positive_reason"
+  ],
+  "properties": {
+    "agent": {
+      "type": "string",
+      "description": "The agent that emitted the finding. Must match the agent_id from metadata.",
+      "enum": [
+        "security",
+        "contracts",
+        "data",
+        "performance",
+        "conventions",
+        "tests"
+      ]
+    },
+    "rule_id": {
+      "type": "string",
+      "description": "Unique rule identifier. Format: <DOMAIN-PREFIX>-<3-DIGITS>, e.g. SEC-007, PERF-012.",
+      "pattern": "^[A-Z]{2,5}-[0-9]{3}$"
+    },
+    "rule_source": {
+      "type": "string",
+      "description": "Path to the grounding section that justifies the rule. Format: <source-id>:<path>#<anchor>",
+      "pattern": "^[a-z0-9-]+:[^:]+(#[a-z0-9-]+)?$"
+    },
+    "file": {
+      "type": "string",
+      "description": "Relative path from the repo root, using forward slashes.",
+      "minLength": 1
+    },
+    "line_start": {
+      "type": "integer",
+      "description": "First line of the violation in the new (post-change) version of the file. 1-indexed.",
+      "minimum": 1
+    },
+    "line_end": {
+      "type": "integer",
+      "description": "Last line of the violation, inclusive. Equal to line_start for single-line findings.",
+      "minimum": 1
+    },
+    "severity": {
+      "type": "string",
+      "description": "Impact level. See FINDING_FORMAT.md for calibration.",
+      "enum": [
+        "critical",
+        "high",
+        "medium",
+        "low"
+      ]
+    },
+    "confidence": {
+      "type": "number",
+      "description": "Confidence in the finding. Must be >= 0.80 to be emitted; lower values get silenced.",
+      "minimum": 0.0,
+      "maximum": 1.0
+    },
+    "claim": {
+      "type": "string",
+      "description": "Factual one-sentence description of the violation. No hedging.",
+      "minLength": 10,
+      "maxLength": 280
+    },
+    "evidence_quote": {
+      "type": "string",
+      "description": "LITERAL code from the diff. Caractere-a-caractere. Never paraphrased.",
+      "minLength": 1
+    },
+    "why_it_matters": {
+      "type": "string",
+      "description": "Concrete consequence in THIS project's context. Must reference the rule_source explicitly.",
+      "minLength": 20
+    },
+    "suggestion": {
+      "type": "string",
+      "description": "Proposed fix. Code example preferred. Must respect other project conventions.",
+      "minLength": 1
+    },
+    "false_positive_risk": {
+      "type": "string",
+      "description": "Honest assessment of when this finding could be wrong.",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    "false_positive_reason": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Required if false_positive_risk is medium or high. Explains what circumstance would invalidate the finding. Null only if risk is low."
+    }
+  },
+  "examples": [
+    {
+      "agent": "security",
+      "rule_id": "SEC-007",
+      "rule_source": "in-setup:06-security-policy.md#input-validation",
+      "file": "src/auth/login.ts",
+      "line_start": 42,
+      "line_end": 42,
+      "severity": "critical",
+      "confidence": 0.98,
+      "claim": "User input concatenated directly into SQL query — classic SQL injection.",
+      "evidence_quote": "const result = await db.query(`SELECT * FROM users WHERE email='${email}'`);",
+      "why_it_matters": "Per 06-security-policy.md#input-validation, this project requires parameterized queries in 100% of DB access. This line allows trivial SQLi against the user lookup endpoint.",
+      "suggestion": "const result = await db.query('SELECT * FROM users WHERE email = $1', [email]);",
+      "false_positive_risk": "low",
+      "false_positive_reason": null
+    }
+  ]
+}

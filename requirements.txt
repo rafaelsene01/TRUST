@@ -1,0 +1,8 @@
+# TRUST framework — Python dependencies
+# Kept minimal intentionally. No heavy frameworks.
+
+# YAML parsing for trust.config.yaml and target.yaml
+PyYAML>=6.0,<7.0
+
+# Type checking support (dev only, not required at runtime)
+# mypy>=1.0

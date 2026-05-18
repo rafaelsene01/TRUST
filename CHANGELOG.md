@@ -1,0 +1,96 @@
+# Changelog — TRUST
+
+All notable changes to this project will be documented here.
+
+Format: [Semantic Versioning](https://semver.org/)
+
+---
+
+## [0.1.1] — 2026-05-17
+
+### trust-security-review: production-ready (skill v1.1.0)
+
+Fechamento da skill `trust-security-review` com todos os artefatos de validação
+mecânica, documentação de Second Pass, e suite de testes isolados.
+
+**Scripts adicionados (`skills/trust-security-review/scripts/`):**
+- `check_evidence_literal.py` — confirma que `evidence_quote` é literal (byte a byte) no diff
+- `parse_checklist.py` — parseia `security.checklist.md` em JSON estruturado e determinístico
+- `validate_dod_attestation.py` — gate final de validação do bloco de auto-attestation
+- `check_rule_source.py` — verifica que cada `rule_source` resolve para uma seção real do grounding
+
+**Assets adicionados (`skills/trust-security-review/assets/`):**
+- `dod-attestation-template.json` — JSON Schema completo do bloco DoD
+- `second-pass-template.json` — JSON Schema do relatório de Second Pass
+- `non-finding-reasons.md` — catálogo de 8 categorias de justificativa para hunks não reportados
+
+**Documentação adicionada (`skills/trust-security-review/references/`):**
+- `SECOND_PASS.md` — protocolo completo do Second Pass (5 passos + 3 exemplos)
+
+**Documentação atualizada:**
+- `references/PROTOCOL.md` — Steps 7-8 reescritos com os 5 scripts na ordem correta
+- `SKILL.md` — 3 exemplos completos (SEC-007 SQLi, SEC-001 hardcoded secret, SEC-002 log de senha)
+- `README.md` da skill — tabela de todos os artefatos com propósito e quando carregar
+
+**Testes:**
+- `tests/skills/test_security_skill.py` — 14/14 testes isolados, < 0.1s, sem dependências externas
+
+---
+
+## [0.1.0-mvp] — 2026-05-18
+
+### First release — MVP (Vertical Slice)
+
+**What works end-to-end:**
+- Phase 0: Trigger — diff capture via `git diff`, run-id generation
+- Phase 1: Grounding — filesystem adapter, 7+ doc loading, sha256 manifest, DoD validation
+- Phase 2: Agent execution — `trust-security-review` skill (SKILL.md + references + scripts + assets)
+- Phase 4: Precision Gate — confidence threshold filtering (default 0.80)
+- Phase 5: Meta-review — evidence_quote literal validation against diff
+- Phase 6: Traceability — skip with explicit flag when disabled
+- Phase 7: Output — REVIEW.md with findings grouped by severity, silenced appendix, hallucinations appendix
+
+**Core modules shipped:**
+- `core/models.py` — shared dataclasses
+- `core/config_loader.py` — YAML config parsing with env var substitution
+- `core/grounding_loader.py` — filesystem doc loading with DoD validation
+- `core/halt_handler.py` — HALT sequence (record + marker + message + raise)
+- `core/run_manifest.py` — run lifecycle management
+- `core/orchestrator.py` — 8-phase pipeline driver
+
+**Adapters:**
+- `adapters/filesystem_adapter.py` — reads from local disk (files, directories, globs)
+
+**Skills:**
+- `skills/trust-security-review/` — full agentskills.io spec-compliant skill
+  - SKILL.md (145 lines, YAML frontmatter)
+  - references/PROTOCOL.md, FINDING_FORMAT.md, DOD.md, GOTCHAS.md
+  - scripts/validate_coverage.py (Python, typed, exit codes)
+  - assets/finding-template.json, coverage-template.json (JSON Schema)
+
+**Commands:**
+- `/trust review-pr` — main review command
+- `/trust init` — interactive onboarding
+- `/trust doctor` — health check
+- `/trust cleanup` — post-HALT cleanup
+
+**Templates:**
+- `trust.config.yaml.template` — setup repo config
+- `target.yaml.template` — per-repo target config
+- `checklists/security.checklist.md` — 12 starter security rules
+- `grounding/06-security-policy.md` — security policy template
+
+**Tests:**
+- `tests/e2e/test_mvp.py` — 8 E2E tests, all passing
+- `tests/fixtures/` — mock grounding, mock diff with intentional violations
+
+**Profile:** Pilot only (Team/Solo/Enterprise in v2.0)
+**Adapters:** Filesystem only (Notion/HTTP in v1.1)
+**Agents:** Security only (5 more in v1.0)
+
+### Not yet in this release (see IMPLEMENTATION_PLAN.md)
+- Second Pass (Phase 3) — v1.0
+- 5 remaining agents — v1.0
+- Notion and HTTP adapters — v1.1
+- Jira/Spec traceability — v1.2
+- Team/Solo/Enterprise profiles — v2.0

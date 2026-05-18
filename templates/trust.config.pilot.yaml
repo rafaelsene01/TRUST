@@ -1,0 +1,256 @@
+# ============================================================================
+# TRUST — Trustable Reviews via Universal Skills & Tooling
+# "O review de IA em que dá pra confiar"
+# ============================================================================
+# Profile: PILOT
+# Setup repo do time: vive SEPARADO do repo do produto.
+# Vinculação ao repo do produto via env var TRUST_SETUP_PATH (shell do dev).
+# ============================================================================
+
+framework:
+  name: "TRUST"
+  full_name: "Trustable Reviews via Universal Skills & Tooling"
+  tagline: "O review de IA em que dá pra confiar"
+  version: "1.0.0"
+  mode: "strict"   # qualquer DoD falho → HALT
+
+# ----------------------------------------------------------------------------
+# PROFILE — modelo operacional do setup
+# ----------------------------------------------------------------------------
+# pilot       → 1 time piloto, setup separado do repo do produto (este caso)
+# team        → time inteiro versiona junto com o repo do produto
+# solo        → dev sozinho, second brain como fonte primária
+# enterprise  → múltiplas camadas com governança corporativa
+# ----------------------------------------------------------------------------
+profile:
+  type: "pilot"
+  team_name: "Payments Squad"
+  team_lead: "@joao.ryan"
+  contact: "#payments-squad"   # canal de Slack/Teams para dúvidas
+
+# ----------------------------------------------------------------------------
+# SETUP REPO — este próprio repo
+# ----------------------------------------------------------------------------
+# O setup repo é onde este config.yaml mora. Pode ser distribuído de 2 formas:
+#   1. clone manual: dev clona este repo e seta TRUST_SETUP_PATH para o path
+#   2. git submodule: outro repo pode incluir este como submódulo
+# ----------------------------------------------------------------------------
+setup_repo:
+  remote: "git@github.com:empresa/payments-team-trust.git"
+  installation:
+    install_hint: |
+      git clone git@github.com:empresa/payments-team-trust.git ~/work/payments-team-trust
+      echo 'export TRUST_SETUP_PATH=~/work/payments-team-trust' >> ~/.zshrc
+      source ~/.zshrc
+
+# ----------------------------------------------------------------------------
+# TARGETS — repos do produto que este setup revisa
+# ----------------------------------------------------------------------------
+# Cada arquivo em targets/ define UM repo-alvo, suas regras aplicáveis,
+# overrides e política de comentário em PR.
+# ----------------------------------------------------------------------------
+targets:
+  discovery_paths:
+    - "./targets/*.yaml"
+  default_target_lookup:
+    # quando o dev roda /trust review-pr dentro de um repo, o framework
+    # tenta casar o cwd com remote_url ou repo_path de algum target
+    strategy: "git_remote_match"   # casa pelo git remote get-url origin
+    fallback: "prompt"             # se não casar, pergunta ao dev
+
+# ----------------------------------------------------------------------------
+# GROUNDING — fontes plugáveis com camadas
+# ----------------------------------------------------------------------------
+# Adapters disponíveis: filesystem, notion, http (Confluence/Wiki)
+# Cada source pode ser marcada como volatile (hash não bloqueia)
+# ----------------------------------------------------------------------------
+grounding:
+  layers:
+    - id: "team"
+      priority: 1                       # mais base — regras do time
+      sources: ["in-setup"]
+      override_policy: "allow"
+
+    - id: "personal"
+      priority: 2                       # mais específico — pessoal do dev
+      sources: ["second-brain"]
+      override_policy: "warn"
+      volatile: true                    # hash só logado, não bloqueia
+      optional: true                    # dev pode não ter
+
+  sources:
+    - id: "in-setup"
+      adapter: "filesystem"
+      base_path: "./grounding"          # relativo ao setup repo
+      volatile: false                   # hash bloqueia (audit)
+
+    - id: "second-brain"
+      adapter: "filesystem"
+      base_path: "${TRUST_SECONDBRAIN_PATH:-}"   # default vazio = desativa
+      volatile: true
+      optional: true                    # pula se var não definida
+
+    # Exemplos de sources que poderão ser adicionadas no futuro:
+    # - id: "corp-confluence"
+    #   adapter: "http"
+    #   base_url: "https://empresa.atlassian.net/wiki/spaces/SEC"
+    #   auth_env: "CONFLUENCE_TOKEN"
+    #   volatile: true
+    #
+    # - id: "company-notion"
+    #   adapter: "notion"
+    #   database_id: "${NOTION_ARCHITECTURE_DB}"
+    #   auth_env: "NOTION_TOKEN"
+    #   volatile: true
+
+  required:
+    - source: "in-setup"
+      path: "01-architecture.md"
+    - source: "in-setup"
+      path: "02-domain-glossary.md"
+    - source: "in-setup"
+      path: "03-api-contracts.md"
+    - source: "in-setup"
+      path: "04-data-model.md"
+    - source: "in-setup"
+      path: "05-conventions.md"
+    - source: "in-setup"
+      path: "06-security-policy.md"
+    - source: "in-setup"
+      path: "07-adrs/"
+
+  dod:
+    all_required_loaded: true
+    min_total_bytes: 5000
+    hash_manifest_generated: true
+
+# ----------------------------------------------------------------------------
+# AGENTES ESPECIALISTAS
+# ----------------------------------------------------------------------------
+agents:
+  - id: "security"
+    skill: "./skills/security/SKILL.md"
+    checklist: "./checklists/security.checklist.md"
+    file_patterns: ["**/*"]
+    enabled: true
+
+  - id: "contracts"
+    skill: "./skills/contracts/SKILL.md"
+    checklist: "./checklists/contracts.checklist.md"
+    file_patterns:
+      - "**/*controller*"
+      - "**/*handler*"
+      - "**/*api*"
+      - "**/openapi*.{yaml,yml,json}"
+    enabled: true
+
+  - id: "data"
+    skill: "./skills/data/SKILL.md"
+    checklist: "./checklists/data.checklist.md"
+    file_patterns:
+      - "**/migrations/**"
+      - "**/*.sql"
+      - "**/models/**"
+    enabled: true
+
+  - id: "performance"
+    skill: "./skills/performance/SKILL.md"
+    checklist: "./checklists/performance.checklist.md"
+    file_patterns: ["**/*"]
+    enabled: true
+
+  - id: "conventions"
+    skill: "./skills/conventions/SKILL.md"
+    checklist: "./checklists/conventions.checklist.md"
+    file_patterns: ["**/*"]
+    enabled: true
+
+  - id: "tests"
+    skill: "./skills/tests/SKILL.md"
+    checklist: "./checklists/tests.checklist.md"
+    file_patterns: ["**/*"]
+    enabled: true
+
+  dod:
+    files_in_domain_evaluated_pct: 100
+    rules_evaluated_pct: 100
+    every_finding_has_rule_id: true
+    every_finding_has_rule_source: true
+    every_finding_has_evidence_quote: true
+    every_finding_has_confidence: true
+
+# ----------------------------------------------------------------------------
+# DEMAIS FASES (Second Pass, Precision Gate, Meta-review)
+# ----------------------------------------------------------------------------
+second_pass:
+  enabled: true
+  dod:
+    hunks_unaccounted: 0
+
+precision_gate:
+  confidence_threshold: 0.80
+  dod:
+    every_finding_classified: true
+    silenced_preserved: true
+
+meta_review:
+  enabled: true
+  validation_checks:
+    - "file_exists_in_diff"
+    - "line_exists_in_diff"
+    - "evidence_quote_is_literal"
+    - "rule_source_resolves"
+  dod:
+    every_finding_passes_all_checks: true
+
+# ----------------------------------------------------------------------------
+# RASTREABILIDADE (opcional, configurável por target)
+# ----------------------------------------------------------------------------
+traceability:
+  enabled: false   # ligue quando o fluxo Jira/spec estiver pronto
+  jira:
+    branch_pattern: "^(?:feature|fix|hotfix)/(?P<jira_id>[A-Z]+-\\d+)"
+  spec_files:
+    pattern: "**/*.spec.md"
+
+# ----------------------------------------------------------------------------
+# OUTPUT — onde e como o REVIEW.md final é entregue
+# ----------------------------------------------------------------------------
+output:
+  # Onde o REVIEW.md é escrito por padrão (sempre fora do repo do produto)
+  default_path: "${TRUST_REVIEW_OUTPUT:-~/Documents/trust-reviews}"
+
+  # Política de comentário no PR — pode ser sobrescrito por target
+  comment_on_pr:
+    default: false              # padrão conservador
+    requires_gh_cli: true       # só posta se `gh` ou `glab` disponível
+
+  ai_never_approves_or_rejects: true
+
+  dod:
+    counters_cross_validate: true
+    run_manifest_complete: true
+
+# ----------------------------------------------------------------------------
+# RUNS HISTORY — política de retenção de execuções
+# ----------------------------------------------------------------------------
+# Configurável conforme a sua escolha: "configurável no setup repo"
+# ----------------------------------------------------------------------------
+runs:
+  base_dir: "./runs"
+
+  retention_policy: "audit_failures_only"
+  # Opções:
+  #   "all_versioned"          → todas as runs versionadas (auditoria total)
+  #   "audit_failures_only"    → só halts versionados, sucessos efêmeros (recomendado)
+  #   "gitignored"             → tudo local de cada dev, nada commitado
+  #   "ephemeral"              → apaga ao fim do run, mesmo nos halts
+
+  on_success:
+    keep_artifacts: false       # sucessos limpam os JSONs intermediários
+    keep_review_md: true        # mas mantém o REVIEW.md final (se configurado)
+
+  on_halt:
+    keep_artifacts: true        # halts SEMPRE preservam tudo para investigação
+    auto_commit: false          # mas não commita automaticamente
+    notify: ".trust-halt"       # cria arquivo marker para alertar
