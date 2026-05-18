@@ -6,6 +6,44 @@ Format: [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [2.1.0] — 2026-05-18
+
+### v2.1 — Learning Loop
+
+O framework agora aprende com os reviews passados e propõe calibrações
+automáticas: threshold adjustments, disable candidates, e identificação
+de regras de alta confiança para promover.
+
+**New core modules:**
+- `core/findings_history.py` — Agrega findings de todos os runs passados
+  - `RuleStat`: total, passed, silenced, hallucinations, avg_confidence, rates
+  - `build_history(runs_dir, target_filter, min_date)` → `FindingsHistory`
+  - Filtros por target_id e data mínima
+  - `export_json()` e `export_markdown()` — relatório de histórico
+- `core/rule_suggester.py` — Analisa histórico e propõe calibrações
+  - 4 tipos de sugestão: `threshold_adjustment`, `disable_candidate`,
+    `enable_candidate`, `review_manually`
+  - `SuggesterConfig` com thresholds configuráveis
+  - `suggest_calibrations(history, current_threshold, cfg)` → `CalibrationReport`
+  - `CalibrationReport.export_json()`, `export_markdown()`, `print_summary()`
+  - Sugestões ordenadas por prioridade (high → medium → low)
+
+**New slash commands:**
+- `commands/trust-learn.md` — `/trust learn from-history` + `/trust learn apply`
+  - `from-history`: analisa runs e grava `runs/learning/calibration.json`
+  - `apply [--dry-run]`: aplica ajustes de threshold em `trust.config.yaml`
+  - `status`: mostra estado atual do loop de aprendizado
+- `commands/trust-stats.md` — `/trust stats` dashboard de métricas
+  - `stats`: visão geral (runs, findings, halt rate, top rules)
+  - `stats rules [--sort X --top N]`: tabela por regra
+  - `stats runs [--status halted|done]`: histórico de runs
+  - `--format json|markdown` para integração com CI
+
+**Tests:**
+- `tests/e2e/test_v2_1.py` — 30 testes cobrindo todos os componentes v2.1 (100% offline)
+
+---
+
 ## [2.0.0] — 2026-05-18
 
 ### v2.0 — Multi-Profile
