@@ -6,6 +6,43 @@ Format: [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [1.0.0] — 2026-05-17
+
+### v1.0 — Pilot Ready
+
+All 6 specialist agents, Second Pass, and Meta-Review are now implemented.
+
+**5 new specialist skills:**
+- `skills/trust-contracts-review/` — API contract violations (8 rules: CON-001..CON-008)
+- `skills/trust-data-review/` — Database migrations and schema changes (8 rules: DAT-001..DAT-008)
+- `skills/trust-performance-review/` — N+1, unbounded queries, missing timeouts (6 rules: PERF-001..PERF-006)
+- `skills/trust-conventions-review/` — Naming, logging, error handling conventions (6 rules: CONV-001..CONV-006)
+- `skills/trust-tests-review/` — Test quality, coverage, mock usage (6 rules: TEST-001..TEST-006)
+
+**2 new pipeline skills:**
+- `skills/trust-second-pass/` — Phase 3: aggregate hunk accounting across all agents
+- `skills/trust-meta-review/` — Phase 5: anti-hallucination validation (5 checks per finding)
+
+**5 new checklist templates (`templates/checklists/`):**
+- `contracts.checklist.md`, `data.checklist.md`, `performance.checklist.md`
+- `conventions.checklist.md`, `tests.checklist.md`
+
+**Each skill includes:**
+- `SKILL.md` with agentskills.io-compliant frontmatter and domain-specific example
+- `references/PROTOCOL.md` — step-by-step execution protocol
+- `references/DOD.md` — definition of done and self-attestation block
+- `references/GOTCHAS.md` — domain-specific edge cases
+- `references/FINDING_FORMAT.md` — field-by-field rules for findings
+- `scripts/validate_coverage.py` — coverage validation script
+- `assets/finding-template.json` and `assets/coverage-template.json`
+
+**Status:** 5 agent skills are structural (SKILL.md + references + scripts).
+Second Pass and Meta-Review have full PROTOCOL.md execution protocols.
+Validation scripts for contracts/data/performance/conventions/tests (equivalent
+to security's check_evidence_literal, parse_checklist, etc.) are v1.1 scope.
+
+---
+
 ## [0.1.1] — 2026-05-17
 
 ### trust-security-review: production-ready (skill v1.1.0)

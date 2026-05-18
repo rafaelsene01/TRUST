@@ -1,0 +1,138 @@
+﻿{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "$id": "https://trust-framework.io/schemas/coverage.json",
+  "title": "TRUST Coverage Matrix",
+  "description": "Canonical schema for an agent's coverage report. Records the matrix of rule Ã— file evaluations and proves 100% coverage.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "agent",
+    "run_id",
+    "rules_in_checklist_total",
+    "rules_evaluated_total",
+    "diff_files_total",
+    "files_in_domain_total",
+    "files_in_domain_evaluated",
+    "rules"
+  ],
+  "properties": {
+    "agent": {
+      "type": "string",
+      "enum": ["security", "contracts", "data", "performance", "conventions", "tests"]
+    },
+    "run_id": {
+      "type": "string",
+      "description": "The TRUST run identifier this coverage belongs to."
+    },
+    "rules_in_checklist_total": {
+      "type": "integer",
+      "description": "Total number of rules declared in the agent's checklist.",
+      "minimum": 0
+    },
+    "rules_evaluated_total": {
+      "type": "integer",
+      "description": "Count of rules that appear in the matrix below. MUST equal rules_in_checklist_total.",
+      "minimum": 0
+    },
+    "diff_files_total": {
+      "type": "integer",
+      "description": "Total number of files changed in the diff.",
+      "minimum": 0
+    },
+    "files_in_domain_total": {
+      "type": "integer",
+      "description": "Number of diff files matching the agent's file_patterns.",
+      "minimum": 0
+    },
+    "files_in_domain_evaluated": {
+      "type": "integer",
+      "description": "Number of files in domain actually evaluated. MUST equal files_in_domain_total.",
+      "minimum": 0
+    },
+    "rules": {
+      "type": "array",
+      "description": "The coverage matrix itself â€” one entry per rule, with verdicts per file.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["rule_id", "title", "source", "verdicts"],
+        "properties": {
+          "rule_id": {
+            "type": "string",
+            "pattern": "^[A-Z]{2,5}-[0-9]{3}$"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "description": "Path to the grounding section that defines this rule."
+          },
+          "verdicts": {
+            "type": "array",
+            "description": "One verdict per file in domain. Length should match files_in_domain_evaluated.",
+            "minItems": 0,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["file", "verdict"],
+              "properties": {
+                "file": {
+                  "type": "string"
+                },
+                "verdict": {
+                  "type": "string",
+                  "enum": ["compliant", "violation", "not_applicable"]
+                },
+                "reason": {
+                  "type": "string",
+                  "description": "Required when verdict is 'not_applicable'. Justification for skipping this rule on this file."
+                }
+              },
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "verdict": { "const": "not_applicable" }
+                    }
+                  },
+                  "then": {
+                    "required": ["reason"],
+                    "properties": {
+                      "reason": { "minLength": 1 }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "agent": "tests",
+      "run_id": "2026-05-17-1430-feat-PAY-123",
+      "rules_in_checklist_total": 15,
+      "rules_evaluated_total": 15,
+      "diff_files_total": 12,
+      "files_in_domain_total": 12,
+      "files_in_domain_evaluated": 12,
+      "rules": [
+        {
+          "rule_id": "SEC-007",
+          "title": "Parameterized SQL queries",
+          "source": "in-setup:06-security-policy.md#input-validation",
+          "verdicts": [
+            { "file": "src/auth/login.ts", "verdict": "violation" },
+            { "file": "src/auth/session.ts", "verdict": "compliant" },
+            { "file": "src/api/users.ts", "verdict": "not_applicable", "reason": "File contains no DB access" }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
