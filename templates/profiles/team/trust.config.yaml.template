@@ -1,0 +1,79 @@
+# TRUST — Team Profile Configuration
+# Copy to .trust/trust.config.yaml in your product repo
+#
+# Team profile: setup lives inside the product repo.
+# No TRUST_SETUP_PATH needed — TRUST auto-detects .trust/ in the CWD.
+
+framework: trust
+version: "1.2"
+profile_type: team
+
+grounding:
+  sources:
+    - id: "in-repo"
+      adapter: "filesystem"
+      base_path: ".trust/grounding"       # relative to product repo root
+      volatile: false
+
+  required:
+    - source: "in-repo"
+      path: "06-security-policy.md"
+      purpose: "Security rules baseline"
+    - source: "in-repo"
+      path: "01-architecture.md"
+      purpose: "System architecture overview"
+
+  # Optional: external sources (Notion/Confluence)
+  # - id: "notion-arch"
+  #   adapter: "notion"
+  #   auth:
+  #     token_env: "NOTION_TOKEN"
+  #   volatile: true
+  #   cache_ttl_minutes: 60
+
+agents:
+  - id: security
+    skill: trust-security-review
+    checklist: ".trust/checklists/security.checklist.md"
+    enabled: true
+
+  - id: contracts
+    skill: trust-contracts-review
+    checklist: ".trust/checklists/contracts.checklist.md"
+    enabled: true
+
+  - id: data
+    skill: trust-data-review
+    checklist: ".trust/checklists/data.checklist.md"
+    enabled: false       # enable when you have DB migrations to review
+
+  - id: performance
+    skill: trust-performance-review
+    checklist: ".trust/checklists/performance.checklist.md"
+    enabled: false
+
+  - id: conventions
+    skill: trust-conventions-review
+    checklist: ".trust/checklists/conventions.checklist.md"
+    enabled: true
+
+  - id: tests
+    skill: trust-tests-review
+    checklist: ".trust/checklists/tests.checklist.md"
+    enabled: true
+
+confidence_threshold: 0.80
+runs_base_dir: ".trust/runs"
+retention_policy: audit_failures_only    # all_versioned | audit_failures_only | ephemeral
+
+# Optional: traceability
+# traceability:
+#   enabled: true
+#   jira:
+#     base_url: "https://empresa.atlassian.net"
+#     project_keys: ["PAY", "AUTH"]
+#     auth:
+#       user_env: "JIRA_USER"
+#       token_env: "JIRA_TOKEN"
+#   branch_pattern: "(?:feat|fix|chore)/({ticket})"
+#   spec_dir: ".trust/specs"

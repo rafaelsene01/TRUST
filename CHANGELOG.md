@@ -6,6 +6,45 @@ Format: [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [2.0.0] — 2026-05-18
+
+### v2.0 — Multi-Profile
+
+TRUST agora suporta quatro profiles de deploy: `pilot` (padrão existente),
+`team` (dentro do repo do produto), `solo` (developer-local) e `enterprise`
+(hierarquia corp/team/personal com política de override auditável).
+
+**New core modules:**
+- `core/profile_registry.py` — Detecção e validação de profile
+  - `detect_profile(cwd)` — resolução em 4 passos: `.trust/` → `TRUST_SETUP_PATH` → solo → default
+  - `validate_profile(profile_type, setup_root)` → lista de erros acionáveis
+  - `profile_summary(cfg)` → linha de diagnóstico para `/trust doctor`
+- `core/layer_resolver.py` — Merge de layers para o profile Enterprise
+  - `build_layers(enterprise_cfg, setup_root)` — constrói layers ordenados por prioridade
+  - `merge_layer_grounding(layers)` — layer de maior prioridade vence em conflito de path
+  - `load_layer_overrides(layer)` + `merge_layer_overrides(layers)` — valida política de override
+  - Override policies: `allow` | `require_reason` | `deny`
+- `core/provenance.py` — Rastreamento de qual layer originou cada finding
+  - `tag_finding(finding, layer)` — injeta bloco `provenance` em cada finding
+  - `build_provenance_report(findings)` — agrupa findings por layer
+  - `format_provenance_appendix(report)` → Markdown para appendix do REVIEW.md
+
+**New script:**
+- `scripts/migrate_pilot_to_enterprise.py` — Migration script pilot → enterprise
+  - `--dry-run` imprime os passos sem executar
+  - Copia grounding e checklists para `team/`, cria estrutura `corp/` vazia
+  - Gera `trust.config.yaml` enterprise com bloco `layers:`
+
+**New templates:**
+- `templates/profiles/team/trust.config.yaml.template`
+- `templates/profiles/solo/trust.config.yaml.template`
+- `templates/profiles/enterprise/trust.config.yaml.template`
+
+**Tests:**
+- `tests/e2e/test_v2.py` — 42 testes cobrindo todos os componentes v2.0 (100% offline)
+
+---
+
 ## [1.2.0] — 2026-05-18
 
 ### v1.2 — Rastreabilidade

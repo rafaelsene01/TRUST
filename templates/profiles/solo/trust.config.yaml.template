@@ -1,0 +1,82 @@
+# TRUST — Solo Profile Configuration
+# Copy to ~/.trust/user.config.yaml
+#
+# Solo profile: developer-local setup.
+# Uses your personal second brain (Notion/Obsidian) as the primary grounding source.
+# Nothing is committed to a shared repo; credentials stay in .env.local.
+
+framework: trust
+version: "1.2"
+profile_type: solo
+
+grounding:
+  sources:
+    # Option A: Notion second brain (recommended for solo)
+    - id: "notion-brain"
+      adapter: "notion"
+      auth:
+        token_env: "NOTION_TOKEN"       # from https://notion.so/my-integrations
+      volatile: true
+      cache_ttl_minutes: 120
+
+    # Option B: Local Obsidian vault
+    # - id: "obsidian"
+    #   adapter: "filesystem"
+    #   base_path: "${HOME}/Documents/SecondBrain"
+    #   volatile: false
+
+    # Option C: Personal rule file (always active)
+    - id: "personal-rules"
+      adapter: "filesystem"
+      base_path: "~/.trust/grounding"
+      volatile: false
+
+  required:
+    - source: "personal-rules"
+      path: "06-security-policy.md"
+      purpose: "Personal security checklist"
+
+  # Notion pages to include in grounding
+  # docs:
+  #   - source: "notion-brain"
+  #     path: "page:abc123..."     # your architecture notes
+  #   - source: "notion-brain"
+  #     path: "page:def456..."     # your security notes
+
+agents:
+  - id: security
+    skill: trust-security-review
+    checklist: "~/.trust/checklists/security.checklist.md"
+    enabled: true
+
+  - id: conventions
+    skill: trust-conventions-review
+    checklist: "~/.trust/checklists/conventions.checklist.md"
+    enabled: true
+
+  - id: contracts
+    skill: trust-contracts-review
+    checklist: "~/.trust/checklists/contracts.checklist.md"
+    enabled: false
+
+  - id: data
+    skill: trust-data-review
+    checklist: "~/.trust/checklists/data.checklist.md"
+    enabled: false
+
+  - id: performance
+    skill: trust-performance-review
+    checklist: "~/.trust/checklists/performance.checklist.md"
+    enabled: false
+
+  - id: tests
+    skill: trust-tests-review
+    checklist: "~/.trust/checklists/tests.checklist.md"
+    enabled: false
+
+confidence_threshold: 0.75              # Solo: slightly lower threshold is fine
+runs_base_dir: "~/.trust/runs"
+retention_policy: ephemeral             # Solo: no audit trail needed
+
+# Output goes to ~/Documents/trust-reviews by default
+# Override with: export TRUST_REVIEW_OUTPUT=~/my-reviews

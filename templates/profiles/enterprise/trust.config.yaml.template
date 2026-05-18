@@ -1,0 +1,99 @@
+# TRUST — Enterprise Profile Configuration
+# Copy to your team's setup repo (e.g. payments-team-trust/trust.config.yaml)
+#
+# Enterprise profile: three-layer hierarchy.
+#   corp/       — company-wide rules (platform team owns this)
+#   team/       — squad-specific rules (your team owns this)
+#   personal/   — per-developer local overrides (~/.trust/personal, NOT committed)
+#
+# Higher-priority layers can override lower-priority rules.
+# corp overrides require a reason (override_policy: require_reason).
+# Run /trust init enterprise to scaffold the directory structure.
+
+framework: trust
+version: "1.2"
+profile_type: enterprise
+
+layers:
+  corp:
+    path: ./corp
+    priority: 1
+    override_policy: require_reason      # team/personal must give a reason to override
+  team:
+    path: ./team
+    priority: 2
+    override_policy: require_reason
+  personal:
+    path: ${HOME}/.trust/personal
+    priority: 3
+    override_policy: allow               # personal overrides don't require a reason
+
+grounding:
+  # Grounding is loaded from each layer's grounding/ subdirectory.
+  # Higher-priority layers win on path collisions.
+  # You can also add shared external sources here:
+  sources:
+    - id: "confluence"
+      adapter: "http"
+      base_url: "https://wiki.empresa.com"
+      auth:
+        type: basic
+        user_env: "CONFLUENCE_USER"
+        token_env: "CONFLUENCE_TOKEN"
+      volatile: true
+      cache_ttl_minutes: 60
+
+  required:
+    # These paths must exist in at least one layer
+    - source: "layer-corp"
+      path: "06-security-policy.md"
+      purpose: "Company-wide security baseline"
+    - source: "layer-team"
+      path: "01-architecture.md"
+      purpose: "Squad architecture overview"
+
+agents:
+  - id: security
+    skill: trust-security-review
+    checklist: "team/checklists/security.checklist.md"
+    enabled: true
+
+  - id: contracts
+    skill: trust-contracts-review
+    checklist: "team/checklists/contracts.checklist.md"
+    enabled: true
+
+  - id: data
+    skill: trust-data-review
+    checklist: "team/checklists/data.checklist.md"
+    enabled: true
+
+  - id: performance
+    skill: trust-performance-review
+    checklist: "team/checklists/performance.checklist.md"
+    enabled: true
+
+  - id: conventions
+    skill: trust-conventions-review
+    checklist: "team/checklists/conventions.checklist.md"
+    enabled: true
+
+  - id: tests
+    skill: trust-tests-review
+    checklist: "team/checklists/tests.checklist.md"
+    enabled: true
+
+confidence_threshold: 0.85              # Enterprise: higher bar
+runs_base_dir: "./runs"
+retention_policy: all_versioned          # Enterprise: keep everything for audit
+
+traceability:
+  enabled: true
+  jira:
+    base_url: "https://empresa.atlassian.net"
+    project_keys: ["PAY", "AUTH", "PLAT", "INFRA"]
+    auth:
+      user_env: "JIRA_USER"
+      token_env: "JIRA_TOKEN"
+  branch_pattern: "(?:feat|fix|chore|refactor)/({ticket})"
+  spec_dir: "./team/specs"
