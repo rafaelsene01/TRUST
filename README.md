@@ -3,7 +3,7 @@
 > **Trustable Reviews via Universal Skills & Tooling**
 > *O review de IA em que dá pra confiar.*
 
-[![Version](https://img.shields.io/badge/version-v2.1.0-blue)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v2.2.0-blue)](CHANGELOG.md)
 [![Tests](https://img.shields.io/badge/tests-182%20passing-brightgreen)](tests/)
 [![Spec](https://img.shields.io/badge/spec-agentskills.io-blue)](https://agentskills.io/specification)
 [![Status](https://img.shields.io/badge/status-stable-brightgreen)](CHANGELOG.md)
@@ -107,7 +107,7 @@ Estes princípios estão no DNA do framework. Mudanças que violem qualquer um d
 
 ## Status atual
 
-✅ **v2.1.0 — Learning Loop.** Framework completo com 6 agentes especialistas, 8 fases de pipeline, 4 profiles de deploy e loop de aprendizado automático. 182 testes passando. Veja o [CHANGELOG](CHANGELOG.md) para o histórico completo de versões.
+✅ **v2.2.0 — Integrations.** Sistema de integrações externas com detecção automática de MCP (Jira, Notion, Confluence, GitHub). Init wizard guia configuração por checklist. Review-pr carrega ticket automaticamente. Doctor valida integrações. Veja o [CHANGELOG](CHANGELOG.md) para o histórico completo de versões.
 
 **Próximo passo:** rodar o piloto real em um time e coletar feedback para calibração dos thresholds.
 

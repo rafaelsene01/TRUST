@@ -45,6 +45,21 @@ For each skill referenced in config:
 | SKILL.md has YAML frontmatter | ✅ | ❌ |
 | References listed in SKILL.md exist | ✅ | ⚠️  |
 
+## 5. Integrations
+
+Para cada integração em `config.integrations` onde `source != disabled`:
+
+| Check | Pass | Fail |
+| --- | --- | --- |
+| `source: mcp` → MCP tool disponível na sessão atual | ✅ | ⚠️ aviso: MCP não detectado, considere `source: api` |
+| `source: api` → env vars declaradas em `auth` estão presentes | ✅ | ❌ lista as vars faltando com instrução de como setar |
+| `source: auto` → pelo menos um caminho (MCP ou env vars) disponível | ✅ | ⚠️ aviso com instrução |
+| `source: api`, Jira → `JiraClient.health_check()` retorna ok | ✅ | ❌ mostra erro e próximo passo |
+| `source: api`, Notion → `NotionAdapter.health_check()` retorna ok | ✅ | ❌ mostra erro e próximo passo |
+| `traceability.enabled: true` → Jira source != disabled | ✅ | ❌ inconsistência: ativar Jira ou desativar traceability |
+
+Integrações com `source: disabled` são silenciosamente ignoradas (sem output).
+
 ## Output format
 
 ```
@@ -72,8 +87,18 @@ Targets
 Skills
   ✅ trust-security-review — SKILL.md valid, 4 references present
 
+Integrations
+  ✅ jira (mcp) — MCP Atlassian detectado na sessão
+  ✅ notion (disabled) — skip
+  ⚠️  confluence (auto) — nenhum acesso disponível
+     MCP não detectado e CONFLUENCE_TOKEN não está no ambiente
+     → Opção 1: configure source: mcp (se tiver MCP Atlassian)
+     → Opção 2: export CONFLUENCE_USER=... e CONFLUENCE_TOKEN=... em .env.local
+     → Opção 3: set source: disabled para ignorar Confluence
+  ✅ github (mcp) — MCP GitHub detectado na sessão
+
 ─────────────────────────────
-Status: 1 warning, 0 errors
+Status: 2 warnings, 0 errors
 
 No errors found — you can run /trust review-pr
 ```

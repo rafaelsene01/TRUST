@@ -6,6 +6,51 @@ Format: [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [2.2.0] — 2026-05-18
+
+### v2.2 — Integrations
+
+Sistema de integrações externas com detecção automática de MCP. O framework agora sabe como acessar Jira, Notion, Confluence e GitHub — via MCP do Claude Code (sem token) ou via API token — e usa essa configuração em todo o pipeline.
+
+**Novo bloco `integrations:` no `trust.config.yaml`:**
+- `source: mcp` — usa MCP tools do Claude Code diretamente (sem credenciais)
+- `source: api` — usa REST client com env vars (`JIRA_TOKEN`, `NOTION_TOKEN`, etc.)
+- `source: auto` — tenta MCP primeiro, cai para API se env vars disponíveis
+- `source: disabled` — integração ignorada (default)
+- Suporte a: Jira, Notion, Confluence, GitHub
+
+**Init wizard — novo step de integrações (todos os 4 profiles):**
+- Checklist único: dev seleciona todas as ferramentas usadas de uma vez
+- Para cada ferramenta marcada: pergunta MCP ou API token
+- Ferramentas não marcadas → `source: disabled` automaticamente
+- Credenciais API salvas em `.env.local` (gitignored)
+- Jira configurado → `traceability.enabled: true` ativado automaticamente
+
+**`/trust review-pr` — Step 1.5: carregamento automático do ticket:**
+- Extrai ticket ID do branch name via `branch_pattern`
+- Branch sem ID → pergunta ao dev ou permite skip
+- Carrega summary + acceptance_criteria via MCP ou API conforme config
+- Verifica spec file local em `specs/{ticket_id}.spec.md`
+- Injeta dados em `agent-context.json` para uso pelos agentes
+
+**`/trust doctor` — nova seção 5: Integrations:**
+- Valida cada integração configurada (source != disabled)
+- `source: mcp` → verifica se MCP tool está disponível na sessão
+- `source: api` → verifica env vars e faz health_check() na API
+- `source: auto` → reporta qual caminho será usado na prática
+- Output: ✅/⚠️/❌ por integração com instrução de correção
+
+**Arquivos modificados:**
+- `templates/trust.config.yaml.template` — bloco `integrations:` + `traceability` simplificado
+- `commands/references/init-pilot.md` — Step 5 (Integrações), steps renumerados
+- `commands/references/init-solo.md` — Step 5 (Integrações), steps renumerados
+- `commands/references/init-team.md` — Step 5 (Integrações), steps renumerados
+- `commands/references/init-enterprise.md` — Step 5 (Integrações) com suporte a herança de camadas
+- `commands/references/review-pr-protocol.md` — Step 1.5 (Load ticket/spec)
+- `commands/references/doctor-checks.md` — Seção 5 (Integrations)
+
+---
+
 ## [2.1.0] — 2026-05-18
 
 ### v2.1 — Learning Loop

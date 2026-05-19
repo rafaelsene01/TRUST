@@ -15,6 +15,57 @@ if not setup_path:
 print(f"✅ Setup repo: {setup_path}")
 ```
 
+## Step 1.5 — Load ticket e spec (se integração Jira ativa)
+
+Verificar `config.integrations.jira.source`:
+
+- Se `disabled` → skip, ir para Step 2.
+
+Extrair ticket ID do branch name usando `config.integrations.jira.branch_pattern`:
+
+```python
+ticket_id = extract_ticket_id(feature_branch, config.integrations.jira.branch_pattern)
+```
+
+Se não encontrar ticket ID no branch:
+```
+⚠️  Branch sem ticket ID detectado.
+    Informe o ID do ticket (ex: PAY-123) ou pressione Enter para skip:
+>
+```
+
+Se ticket ID disponível, carregar conteúdo via source configurado:
+
+**Se `source: mcp` ou (`source: auto` e MCP tool disponível na sessão):**
+- Usar MCP tool Jira para buscar o ticket
+- Extrair: summary, description, acceptance_criteria
+
+**Se `source: api` ou (`source: auto` e env vars `JIRA_USER`/`JIRA_TOKEN` presentes):**
+- Usar `core.jira_integration.JiraClient.get_ticket(ticket_id)`
+- Extrair: summary, description, acceptance_criteria
+
+**Se `source: auto` e nenhum caminho disponível:**
+```
+⚠️  Jira configurado como auto mas nenhum acesso disponível.
+    Cole o conteúdo do acceptance criteria ou pressione Enter para skip:
+>
+```
+
+Verificar se existe spec file local em `{setup_path}/specs/{ticket_id}.spec.md`:
+- Se encontrar → carregar e combinar com dados do Jira
+
+Adicionar ao `agent-context.json`:
+```json
+"ticket": {
+  "id": "PAY-123",
+  "summary": "...",
+  "acceptance_criteria": "...",
+  "source": "mcp|api|manual|not_found"
+}
+```
+
+Os agentes usam `ticket.acceptance_criteria` como critério adicional de validação durante o review.
+
 ## Step 2 — Get current branch if not specified
 
 ```python

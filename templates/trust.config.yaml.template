@@ -10,7 +10,7 @@ framework:
   name: "TRUST"
   full_name: "Trustable Reviews via Universal Skills & Tooling"
   tagline: "O review de IA em que dá pra confiar"
-  version: "1.0.0"
+  version: "2.2.0"
   mode: "strict"                 # strict | warn — never change to warn in prod
 
 profile:
@@ -166,12 +166,46 @@ meta_review:
     every_finding_passes_all_checks: true
 
 # ------------------------------------------------------------
-# TRACEABILITY (disabled by default)
+# INTEGRATIONS
+# Configuradas pelo /trust init — não edite manualmente a menos
+# que saiba o que está fazendo.
+#
+# source: auto  → tenta MCP primeiro, cai para api se env vars existirem
+# source: mcp   → usa MCP tools do Claude Code (sem token necessário)
+# source: api   → usa REST client com env vars declaradas em auth
+# source: disabled → integração ignorada
+# ------------------------------------------------------------
+integrations:
+  jira:
+    source: disabled          # auto | mcp | api | disabled
+    base_url: ""              # ex: https://empresa.atlassian.net
+    project_keys: []          # ex: ["PAY", "AUTH"]
+    branch_pattern: "(?:feat|fix|chore|refactor)/(?P<ticket>[A-Z]+-\\d+)"
+    auth:                     # relevante apenas se source: api
+      user_env: "JIRA_USER"
+      token_env: "JIRA_TOKEN"
+
+  notion:
+    source: disabled
+    auth:
+      token_env: "NOTION_TOKEN"
+
+  confluence:
+    source: disabled
+    base_url: ""              # ex: https://empresa.atlassian.net/wiki
+    auth:
+      user_env: "CONFLUENCE_USER"
+      token_env: "CONFLUENCE_TOKEN"
+
+  github:
+    source: disabled          # auto | mcp | gh-cli | disabled
+
+# ------------------------------------------------------------
+# TRACEABILITY
+# Usa as integrações acima para ligar findings ao ticket de origem.
 # ------------------------------------------------------------
 traceability:
-  enabled: false
-  jira:
-    branch_pattern: "^(?:feature|fix|hotfix)/(?P<jira_id>[A-Z]+-\\d+)"
+  enabled: false              # habilitado automaticamente se jira.source != disabled
   spec_files:
     pattern: "**/*.spec.md"
 
