@@ -1,3 +1,7 @@
+---
+description: Promotes reviewed draft grounding documents from grounding/_drafts/ to grounding/ making them active for reviews
+---
+
 # /trust approve-drafts
 
 Promotes reviewed draft grounding documents from `grounding/_drafts/` to `grounding/`.

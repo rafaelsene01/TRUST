@@ -6,6 +6,27 @@ Format: [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [2.3.0] — 2026-05-19
+
+### v2.3 — Plugin Distribution
+
+TRUST agora é um plugin instalável via `/plugin marketplace add` + `/plugin install`, sem necessidade de configuração manual de skills e commands.
+
+**Novo: `.claude-plugin/`:**
+- `plugin.json` — manifesto do plugin com `name`, `displayName`, `version`, `skills`, `commands`
+- `marketplace.json` — necessário para que o repositório seja reconhecido pelo marketplace do Claude Code
+
+**Commands — frontmatter adicionado:**
+- Todos os 10 commands (`trust-review-pr`, `trust-init`, `trust-doctor`, `trust-cleanup`, `trust-learn`, `trust-stats`, `trust-runs`, `trust-trace`, `trust-approve-drafts`, `trust-map`) agora têm frontmatter `description:` obrigatório para carregamento correto pelo runtime
+
+**Instalação atualizada (ver README):**
+```bash
+/plugin marketplace add jryanvieira10/trust
+/plugin install trust@trust
+```
+
+---
+
 ## [2.2.0] — 2026-05-18
 
 ### v2.2 — Integrations

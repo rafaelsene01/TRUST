@@ -1,3 +1,7 @@
+---
+description: Interactive onboarding to create a TRUST setup repo for your team — generates config, grounding templates, and validates the setup
+---
+
 # /trust init
 
 Interactive onboarding to create a TRUST setup repo for your team.

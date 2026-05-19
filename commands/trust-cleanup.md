@@ -1,3 +1,7 @@
+---
+description: Remove a halted run's artifacts after investigating and resolving the blocking issue
+---
+
 # /trust cleanup
 
 Remove a halted run's artifacts after you've investigated and resolved the issue.

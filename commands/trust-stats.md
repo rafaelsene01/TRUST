@@ -1,3 +1,7 @@
+---
+description: Display review metrics and team dashboard — runs, findings, halt rate, and per-rule breakdown
+---
+
 # /trust stats
 
 Display review metrics and team dashboard.

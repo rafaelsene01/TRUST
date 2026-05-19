@@ -1,0 +1,15 @@
+{
+  "name": "trust",
+  "displayName": "TRUST — Trustable Reviews via Universal Skills & Tooling",
+  "version": "2.3.0",
+  "description": "Framework de review de Pull Requests com agentes de IA. 6 agentes especialistas, grounding obrigatório, anti-hallucination, e suporte a integrações externas.",
+  "author": {
+    "name": "jryanvieira10",
+    "url": "https://github.com/jryanvieira10"
+  },
+  "repository": "https://github.com/jryanvieira10/trust",
+  "license": "MIT",
+  "keywords": ["code-review", "ai", "pull-request", "security", "grounding"],
+  "skills": "./skills/",
+  "commands": ["./commands/"]
+}

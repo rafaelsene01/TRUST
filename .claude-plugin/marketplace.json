@@ -1,0 +1,14 @@
+{
+  "name": "trust",
+  "owner": { "name": "jryanvieira10" },
+  "description": "Framework de review de Pull Requests com agentes de IA — grounding obrigatório, anti-hallucination, 6 agentes especialistas.",
+  "plugins": [
+    {
+      "name": "trust",
+      "displayName": "TRUST — Trustable Reviews via Universal Skills & Tooling",
+      "description": "Framework de review de Pull Requests com agentes de IA. 6 agentes especialistas, grounding obrigatório, anti-hallucination, e suporte a integrações externas.",
+      "version": "2.3.0",
+      "source": "./"
+    }
+  ]
+}

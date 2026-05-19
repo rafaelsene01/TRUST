@@ -1,3 +1,7 @@
+---
+description: Analyze past review history and propose calibration improvements for thresholds and rules
+---
+
 # /trust learn
 
 Analyze past review history and propose calibration improvements.

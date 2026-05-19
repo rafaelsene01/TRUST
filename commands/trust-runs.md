@@ -1,3 +1,7 @@
+---
+description: Inspect the history of TRUST review runs stored in the setup repo — list, show, and clean past runs
+---
+
 # /trust runs
 
 Inspect the history of TRUST review runs stored in the setup repo.

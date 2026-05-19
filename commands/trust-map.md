@@ -1,3 +1,7 @@
+---
+description: Scans the product repo and auto-generates grounding document drafts in grounding/_drafts/ for human review
+---
+
 # /trust map codebase
 
 Scans the product repo and auto-generates grounding document drafts in `grounding/_drafts/`.

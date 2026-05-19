@@ -1,3 +1,7 @@
+---
+description: Validates the TRUST setup, grounding sources, and integrations — run after install or whenever something seems broken
+---
+
 # /trust doctor
 
 Validates the TRUST setup and all grounding sources. Run after install, after cloning the setup repo, or whenever something seems broken.

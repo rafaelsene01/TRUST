@@ -3,7 +3,7 @@
 > **Trustable Reviews via Universal Skills & Tooling**
 > *O review de IA em que dá pra confiar.*
 
-[![Version](https://img.shields.io/badge/version-v2.2.0-blue)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v2.3.0-blue)](CHANGELOG.md)
 [![Tests](https://img.shields.io/badge/tests-182%20passing-brightgreen)](tests/)
 [![Spec](https://img.shields.io/badge/spec-agentskills.io-blue)](https://agentskills.io/specification)
 [![Status](https://img.shields.io/badge/status-stable-brightgreen)](CHANGELOG.md)
@@ -41,7 +41,8 @@ Se você reconhece pelo menos dois desses, TRUST foi desenhado para você.
 
 ```bash
 # 1. Instala o framework (uma vez por máquina)
-/plugin add github.com/seu-user/trust
+/plugin marketplace add jryanvieira10/trust
+/plugin install trust@trust
 
 # 2. Clona o setup do seu time (uma vez por dev)
 git clone github.com/empresa/payments-team-trust ~/work/payments-team-trust
@@ -87,7 +88,7 @@ A fonte da verdade do projeto está organizada por tópico para você navegar pe
 | **[docs/03-onboarding.md](docs/03-onboarding.md)** | Instalação, init, doctor, primeiro review passo a passo |
 | **[docs/04-skills-spec.md](docs/04-skills-spec.md)** | Como cada skill segue o padrão agentskills.io oficial |
 | **[docs/05-glossario.md](docs/05-glossario.md)** | Vocabulário do TRUST (DoD, halt, grounding, target, layer, run-id) |
-| **[IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md)** | Plano de entrega completo em fases (MVP → v1.0 → v1.x → v2.0) |
+| **[CHANGELOG.md](CHANGELOG.md)** | Histórico de versões com plano de entrega detalhado por fase |
 
 ---
 
@@ -107,7 +108,7 @@ Estes princípios estão no DNA do framework. Mudanças que violem qualquer um d
 
 ## Status atual
 
-✅ **v2.2.0 — Integrations.** Sistema de integrações externas com detecção automática de MCP (Jira, Notion, Confluence, GitHub). Init wizard guia configuração por checklist. Review-pr carrega ticket automaticamente. Doctor valida integrações. Veja o [CHANGELOG](CHANGELOG.md) para o histórico completo de versões.
+✅ **v2.3.0 — Plugin Distribution.** TRUST agora é instalável diretamente via `/plugin marketplace add` + `/plugin install`, sem configuração manual. Todos os commands têm frontmatter `description:` e o manifesto `.claude-plugin/` está completo. Veja o [CHANGELOG](CHANGELOG.md) para o histórico completo de versões.
 
 **Próximo passo:** rodar o piloto real em um time e coletar feedback para calibração dos thresholds.
 
