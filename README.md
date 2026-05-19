@@ -119,6 +119,12 @@ Por enquanto o framework está em fase de design/MVP. Issues e discussões são 
 
 ---
 
+## Inspiração
+
+A ideia original veio da skill de PR review da [Tech Leads Club](https://gist.github.com/waldemarnt/2f7e56618a8512548e1677489a912051). TRUST nasceu da vontade de levar esse conceito mais longe: com grounding obrigatório, rastreabilidade, anti-hallucination, e suporte a integrações externas.
+
+---
+
 ## Licença
 
 MIT — veja [LICENSE](LICENSE).
