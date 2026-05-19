@@ -41,7 +41,7 @@ Se você reconhece pelo menos dois desses, TRUST foi desenhado para você.
 
 ```bash
 # 1. Instala o framework (uma vez por máquina)
-/plugin marketplace add jryanvieira10/trust
+/plugin marketplace add jryanvieira/trust
 /plugin install trust@trust
 
 # 2. Clona o setup do seu time (uma vez por dev)
