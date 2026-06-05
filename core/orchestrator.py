@@ -350,12 +350,41 @@ def _run_phase_6_traceability(
     return result.annotated_findings
 
 
+def _post_github_pr_comment(
+    review_path: Path,
+    branch: str,
+    target_data: dict,
+) -> None:
+    """Posta REVIEW.md como comentário no PR. Falha graciosamente."""
+    output_cfg = target_data.get("output", {})
+    if not output_cfg.get("comment_on_pr", False):
+        return
+    if output_cfg.get("pr_platform", "github") != "github":
+        return
+
+    try:
+        subprocess.run(
+            ["gh", "pr", "comment", branch, "--body-file", str(review_path)],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        print("  ✅ PR comment posted via gh CLI")
+    except subprocess.CalledProcessError as e:
+        print(f"  ⚠️  Failed to post PR comment: {e.stderr}")
+        print("     Next action: create the PR first with `gh pr create`, then retry")
+    except FileNotFoundError:
+        print("  ⚠️  gh CLI not found — PR comment skipped")
+        print("     Next action: install gh CLI from https://cli.github.com")
+
+
 def _run_phase_7_output(
     manifest: RunManifest,
     run_dir: Path,
     branch: str,
     output_path: Path,
     traceability_report: dict | None = None,
+    target_data: dict | None = None,
 ) -> Path:
     """Phase 7: Output — assemble final REVIEW.md."""
     phase = mark_phase_start(manifest, 7, run_dir)
@@ -508,6 +537,9 @@ def _run_phase_7_output(
 
     # Also write to run_dir for audit
     (run_dir / "REVIEW.md").write_text(review_md, encoding="utf-8")
+
+    if target_data is not None:
+        _post_github_pr_comment(output_path, branch, target_data)
 
     mark_phase_done(manifest, phase, run_dir, artifact="REVIEW.md")
     print(f"  ✅ Phase 7 done: REVIEW.md written to {output_path}")
@@ -731,6 +763,7 @@ def run_review(
         review_path = _run_phase_7_output(
             manifest, run_dir, feature_branch, output_path,
             traceability_report=traceability_report,
+            target_data=target_data,
         )
 
         # --- Finalise ---

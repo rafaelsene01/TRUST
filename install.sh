@@ -26,7 +26,7 @@ CYAN='\033[0;36m'
 BOLD='\033[1m'
 NC='\033[0m'
 
-TRUST_REPO="https://github.com/seu-user/trust.git"
+TRUST_REPO="https://github.com/rafaelsene01/TRUST"
 TRUST_HOME="${TRUST_HOME:-$HOME/.trust}"
 CLAUDE_SKILLS_DIR="${CLAUDE_SKILLS_DIR:-$HOME/.claude/skills}"
 CLAUDE_COMMANDS_DIR="${CLAUDE_COMMANDS_DIR:-$HOME/.claude/commands}"

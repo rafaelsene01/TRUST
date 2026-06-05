@@ -199,6 +199,11 @@ integrations:
 
   github:
     source: disabled          # auto | mcp | gh-cli | disabled
+    repo: ""                  # owner/repo — deixar vazio para auto-detectar pelo cwd
+    branch_pattern: "(?:feat|fix|chore|refactor|docs|test)/(?P<issue>\\d+)"
+
+# Quando github.source != disabled, defina traceability.enabled: true para
+# ligar Issues ao rastreamento de findings.
 
 # ------------------------------------------------------------
 # TRACEABILITY

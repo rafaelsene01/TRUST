@@ -82,6 +82,13 @@ def _extract_ticket_id(branch: str, cfg: dict) -> str | None:
     return extract_ticket_id(branch, pattern)
 
 
+def _extract_github_issue_number(branch: str, cfg: dict) -> int | None:
+    """Extrai número de Issue GitHub do branch. Retorna int ou None."""
+    from .github_integration import extract_issue_number
+    pattern = cfg.get("branch_pattern")
+    return extract_issue_number(branch, pattern)
+
+
 def _resolve_from_spec(
     ticket_id: str, spec_dir: Path
 ) -> TracedTo | None:
@@ -130,6 +137,32 @@ def _resolve_from_jira(ticket_id: str, jira_cfg: dict) -> TracedTo | None:
     )
 
 
+def _resolve_from_github(
+    issue_number: int,
+    github_cfg: dict,
+    cwd: "Path | None" = None,
+) -> TracedTo | None:
+    """Resolve Issue do GitHub via gh CLI. Retorna None em qualquer erro."""
+    from .github_integration import GitHubClient, GitHubIssue, GitHubError
+
+    repo = github_cfg.get("repo")  # owner/repo, opcional
+    client = GitHubClient(repo=repo or None)
+    result = client.get_issue(issue_number)
+
+    if isinstance(result, GitHubError):
+        return None
+
+    return TracedTo(
+        ticket_id=f"#{result.issue_number}",
+        title=result.title,
+        url=result.url,
+        source="github",
+        acceptance_criteria=result.body,  # corpo completo do card
+        status=result.state,
+        components=result.labels,
+    )
+
+
 def _annotate_findings(findings: list[dict], traced_to: TracedTo) -> list[dict]:
     """Return a copy of each finding with traced_to injected."""
     annotated = []
@@ -164,44 +197,65 @@ def run_traceability(
     Returns:
         TraceabilityResult with ok, ticket_id, traced_to, annotated_findings.
     """
-    # 1. Extract ticket ID
+    # 1. Extract ticket ID from branch (Jira pattern)
     ticket_id = _extract_ticket_id(branch, traceability_cfg)
-    if not ticket_id:
-        return TraceabilityResult(
-            ok=False,
-            ticket_id=None,
-            traced_to=None,
-            annotated_findings=list(findings),
-            warning=(
-                f"Could not extract a ticket ID from branch '{branch}'.\n"
-                f"  Branch pattern: {traceability_cfg.get('branch_pattern', 'default')}\n"
-                f"  Next action: rename the branch to include a ticket ID like PAY-123, "
-                f"or adjust branch_pattern in trust.config.yaml."
-            ),
-        )
+    # Note: ticket_id pode ser None se o branch não tiver padrão Jira
 
     traced_to: TracedTo | None = None
 
-    # 2. Try local spec file first
+    # 2. Try local spec file first (se ticket_id disponível)
     spec_dir_raw = traceability_cfg.get("spec_dir", "./specs")
     spec_dir = (setup_path / spec_dir_raw.lstrip("./")).resolve()
 
-    try:
-        traced_to = _resolve_from_spec(ticket_id, spec_dir)
-    except Exception as exc:
-        pass  # Spec dir errors are non-fatal; fall through to Jira
+    if ticket_id:
+        try:
+            traced_to = _resolve_from_spec(ticket_id, spec_dir)
+        except Exception:
+            pass  # Spec dir errors are non-fatal; fall through
 
-    # 3. Try Jira if no spec file
+    # 3. Try GitHub if configured and not resolved yet
+    if traced_to is None:
+        integrations_cfg = traceability_cfg.get("integrations", {})
+        github_cfg = integrations_cfg.get("github", {})
+        # Também tenta pegar do nível raiz do config (por compatibilidade)
+        if not github_cfg:
+            github_cfg = traceability_cfg.get("github", {})
+
+        github_source = github_cfg.get("source", "disabled")
+        if github_source != "disabled":
+            issue_number = _extract_github_issue_number(branch, github_cfg)
+            if issue_number is not None:
+                try:
+                    traced_to = _resolve_from_github(issue_number, github_cfg)
+                except Exception:
+                    pass  # GitHub errors are non-fatal
+                if traced_to is not None and ticket_id is None:
+                    ticket_id = f"#{issue_number}"
+
+    # 4. Try Jira if no spec file and not resolved yet
     if traced_to is None:
         jira_cfg = traceability_cfg.get("jira", {})
-        if jira_cfg.get("base_url"):
+        if jira_cfg.get("base_url") and ticket_id:
             try:
                 traced_to = _resolve_from_jira(ticket_id, jira_cfg)
             except Exception:
                 pass  # Jira errors are non-fatal
 
-    # 4. Fallback: ticket found in branch but no data resolved
+    # 5. Fallback: no data resolved
     if traced_to is None:
+        if not ticket_id:
+            return TraceabilityResult(
+                ok=False,
+                ticket_id=None,
+                traced_to=None,
+                annotated_findings=list(findings),
+                warning=(
+                    f"Could not extract a ticket ID from branch '{branch}'.\n"
+                    f"  Branch pattern: {traceability_cfg.get('branch_pattern', 'default')}\n"
+                    f"  Next action: rename the branch to include a ticket ID like PAY-123, "
+                    f"or adjust branch_pattern in trust.config.yaml."
+                ),
+            )
         traced_to = TracedTo(
             ticket_id=ticket_id,
             title="",

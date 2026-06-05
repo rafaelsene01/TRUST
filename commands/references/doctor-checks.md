@@ -52,6 +52,8 @@ Para cada integração em `config.integrations` onde `source != disabled`:
 | Check | Pass | Fail |
 | --- | --- | --- |
 | `source: mcp` → MCP tool disponível na sessão atual | ✅ | ⚠️ aviso: MCP não detectado, considere `source: api` |
+| `source: gh-cli` → `gh` instalado no PATH | ✅ | ❌ `gh` CLI não encontrado → instale em https://cli.github.com |
+| `source: gh-cli` → `gh auth status` exit 0 | ✅ | ❌ gh não autenticado → `gh auth login` |
 | `source: api` → env vars declaradas em `auth` estão presentes | ✅ | ❌ lista as vars faltando com instrução de como setar |
 | `source: auto` → pelo menos um caminho (MCP ou env vars) disponível | ✅ | ⚠️ aviso com instrução |
 | `source: api`, Jira → `JiraClient.health_check()` retorna ok | ✅ | ❌ mostra erro e próximo passo |
@@ -96,6 +98,11 @@ Integrations
      → Opção 2: export CONFLUENCE_USER=... e CONFLUENCE_TOKEN=... em .env.local
      → Opção 3: set source: disabled para ignorar Confluence
   ✅ github (mcp) — MCP GitHub detectado na sessão
+  ✅ github (gh-cli) — autenticado como rafaelsene01
+  ❌ github (gh-cli) — gh não autenticado
+     → Next action: gh auth login
+  ❌ github (gh-cli) — gh CLI não encontrado
+     → Next action: instale em https://cli.github.com
 
 ─────────────────────────────
 Status: 2 warnings, 0 errors

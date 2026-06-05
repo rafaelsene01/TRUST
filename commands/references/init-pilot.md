@@ -82,16 +82,42 @@ GitHub — como você acessa?
 >
 ```
 
+**Lógica especial para GitHub:**
+
+Antes de exibir a pergunta acima, detectar automaticamente se `gh` está disponível no PATH:
+
+```
+# detecção automática
+if command -v gh >/dev/null 2>&1:
+  → pré-selecionar [2] gh-cli e informar ao usuário:
+      "✓ gh CLI detectado — usando como fonte do GitHub"
+      source: gh-cli
+  → não perguntar; pular direto para configuração de traceability
+else:
+  → exibir as opções normalmente:
+      [1] MCP GitHub já configurado  → source: mcp
+      [2] Instalar gh CLI agora      → guiar instalação e retentar detecção
+```
+
+Se GitHub configurado (source != disabled):
+- Setar `traceability.enabled: true` automaticamente
+- Setar `traceability.branch_pattern: "(?:feat|fix|chore|refactor|docs|test)/(?P<issue>\\d+)"`
+- Nota: o contexto do card (descrição do Issue) é carregado automaticamente no início de cada review
+
+---
+
 Ferramentas não marcadas → `source: disabled` automaticamente, sem perguntas.
 
-Se [2] em qualquer integração, pedir as credenciais e salvar em `.env.local` (gitignored).
+Se [2] em qualquer integração que exija credenciais (Jira, Notion, Confluence), pedir as credenciais e salvar em `.env.local` (gitignored).
 
 Salvar resultado no bloco `integrations:` do `trust.config.yaml`:
-- Marcada + [1] → `source: mcp`
-- Marcada + [2] → `source: api`
+- Marcada + MCP → `source: mcp`
+- Marcada + gh CLI → `source: gh-cli`
+- Marcada + API token → `source: api`
 - Não marcada → `source: disabled`
 
 Se Jira configurado (source != disabled): setar `traceability.enabled: true` automaticamente.
+Se GitHub configurado (source != disabled): setar `traceability.enabled: true` e `traceability.branch_pattern` automaticamente (ver acima).
 
 ## Step 6 — Grounding sources
 

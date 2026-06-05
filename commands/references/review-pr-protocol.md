@@ -36,6 +36,14 @@ Se não encontrar ticket ID no branch:
 
 Se ticket ID disponível, carregar conteúdo via source configurado:
 
+**Se `source: gh-cli` ou (`source: auto` e `gh` CLI disponível no PATH):**
+- Extrair número do issue via `branch_pattern` numérico (ex: `feat/152` → `152`)
+- Chamar `gh issue view <N> --json number,title,body,labels,state,url`
+- Mapear `body` para `ticket.acceptance_criteria`
+- Injetar em `agent-context.json` sob `ticket.acceptance_criteria`
+- **NOTA:** o body do Issue é injetado em `ticket.acceptance_criteria` e usado pelos agentes como critério de validação do review, não só exibido
+- Se Issue não encontrado → registrar `warning` no `traceability.json`, continuar sem HALT
+
 **Se `source: mcp` ou (`source: auto` e MCP tool disponível na sessão):**
 - Usar MCP tool Jira para buscar o ticket
 - Extrair: summary, description, acceptance_criteria
