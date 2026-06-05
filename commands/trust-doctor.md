@@ -1,5 +1,5 @@
 ---
-description: Validates the TRUST setup, grounding sources, and integrations — run after install or whenever something seems broken
+description: Valida o setup do TRUST, fontes de grounding e integrações — execute após instalar ou quando algo parecer quebrado
 ---
 
 # /trust doctor

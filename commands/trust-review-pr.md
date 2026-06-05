@@ -1,5 +1,5 @@
 ---
-description: Run a full TRUST review on a feature branch — loads grounding, executes 6 specialist agents, and generates REVIEW.md
+description: Executa um review completo do TRUST em um branch de feature — carrega grounding, executa 6 agentes especialistas e gera o REVIEW.md
 ---
 
 # /trust review-pr

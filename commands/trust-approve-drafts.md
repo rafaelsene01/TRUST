@@ -1,5 +1,5 @@
 ---
-description: Promotes reviewed draft grounding documents from grounding/_drafts/ to grounding/ making them active for reviews
+description: Promove rascunhos de grounding revisados de grounding/_drafts/ para grounding/, tornando-os ativos para os reviews
 ---
 
 # /trust approve-drafts

@@ -1,5 +1,5 @@
 ---
-description: Remove a halted run's artifacts after investigating and resolving the blocking issue
+description: Remove os artefatos de uma execução interrompida após investigar e resolver o problema bloqueador
 ---
 
 # /trust cleanup

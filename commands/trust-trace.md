@@ -1,5 +1,5 @@
 ---
-description: Inspect and validate traceability for the current branch — links findings to Jira tickets or local spec files
+description: Inspeciona e valida a rastreabilidade do branch atual — vincula findings a issues do GitHub ou arquivos de spec locais
 ---
 
 # /trust trace

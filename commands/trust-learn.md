@@ -1,5 +1,5 @@
 ---
-description: Analyze past review history and propose calibration improvements for thresholds and rules
+description: Analisa o histórico de reviews passados e propõe melhorias de calibração para thresholds e regras
 ---
 
 # /trust learn

@@ -1,5 +1,5 @@
 ---
-description: Scans the product repo and auto-generates grounding document drafts in grounding/_drafts/ for human review
+description: Escaneia o repo do produto e gera automaticamente rascunhos de documentos de grounding em grounding/_drafts/ para revisão humana
 ---
 
 # /trust map codebase

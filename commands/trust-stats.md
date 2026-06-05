@@ -1,5 +1,5 @@
 ---
-description: Display review metrics and team dashboard — runs, findings, halt rate, and per-rule breakdown
+description: Exibe métricas de review e dashboard — execuções, findings, taxa de halt e detalhamento por regra
 ---
 
 # /trust stats
