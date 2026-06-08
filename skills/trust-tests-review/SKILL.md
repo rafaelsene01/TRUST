@@ -1,6 +1,6 @@
 ---
 name: trust-tests-review
-description: Reviews pull request diffs for test quality violations defined in the project's testing policy and grounding documents. Use when analyzing test files for missing test coverage on new public functions, logic inside tests, brittle assertions, improper mock usage, missing edge case coverage, or test naming violations. Always operates within project-specific rules. Activated by the TRUST orchestrator during PR review execution.
+description: Revisa diffs de pull request em busca de violações de qualidade de testes definidas na política de testes e nos documentos de grounding do projeto. Use ao analisar arquivos de teste para cobertura ausente em novas funções públicas, lógica dentro de testes, assertions frágeis, uso inadequado de mock, cobertura de edge cases ausente ou violações de nomenclatura de testes. Sempre opera dentro das regras específicas do projeto. Ativado pelo orchestrator do TRUST durante a execução do review.
 license: MIT
 compatibility: Designed for Claude Code. Requires TRUST_SETUP_PATH env var pointing to a valid TRUST setup repo. Python 3.11+ for scripts.
 metadata:

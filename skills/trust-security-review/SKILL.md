@@ -1,6 +1,6 @@
 ---
 name: trust-security-review
-description: Reviews pull request diffs for security violations defined in the project's security checklist and grounding documents. Use when a developer requests TRUST security review, when analyzing code changes for security issues like SQL injection, secret handling, authentication, authorization, input validation, or cryptography. Always operates within project-specific rules — never uses generic security knowledge. Activated by the TRUST orchestrator during PR review execution.
+description: Revisa diffs de pull request em busca de violações de segurança definidas no checklist de segurança e nos documentos de grounding do projeto. Use quando um desenvolvedor solicita review de segurança do TRUST ou ao analisar mudanças para problemas como SQL injection, manejo de secrets, autenticação, autorização, validação de input ou criptografia. Sempre opera dentro das regras específicas do projeto — nunca usa conhecimento genérico de segurança. Ativado pelo orchestrator do TRUST durante a execução do review.
 license: MIT
 compatibility: Designed for Claude Code. Requires TRUST_SETUP_PATH env var pointing to a valid TRUST setup repo. Python 3.11+ for scripts.
 metadata:

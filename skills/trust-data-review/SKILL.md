@@ -1,6 +1,6 @@
 ---
 name: trust-data-review
-description: Reviews pull request diffs for data model and database migration violations defined in the project's data policy and grounding documents. Use when analyzing schema migrations, model changes, index additions/removals, constraint changes, or data integrity rules. Always operates within project-specific rules. Activated by the TRUST orchestrator during PR review execution.
+description: Revisa diffs de pull request em busca de violações de modelo de dados e migrações de banco definidas na política de dados e nos documentos de grounding do projeto. Use ao analisar migrações de schema, alterações de model, adições/remoções de índice, mudanças de constraint ou regras de integridade de dados. Sempre opera dentro das regras específicas do projeto. Ativado pelo orchestrator do TRUST durante a execução do review.
 license: MIT
 compatibility: Designed for Claude Code. Requires TRUST_SETUP_PATH env var pointing to a valid TRUST setup repo. Python 3.11+ for scripts.
 metadata:

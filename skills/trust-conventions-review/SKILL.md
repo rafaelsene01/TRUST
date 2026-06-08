@@ -1,6 +1,6 @@
 ---
 name: trust-conventions-review
-description: Reviews pull request diffs for code convention violations defined in the project's conventions grounding documents. Use when analyzing code changes for naming violations, logging pattern deviations, error handling anti-patterns, file structure violations, or any code style rule documented in the project's conventions guide. Always operates within project-specific rules. Activated by the TRUST orchestrator during PR review execution.
+description: Revisa diffs de pull request em busca de violações de convenções de código definidas nos documentos de grounding de convenções do projeto. Use ao analisar mudanças para violações de nomenclatura, desvios de padrão de log, anti-patterns de tratamento de erro, violações de estrutura de arquivos ou qualquer regra de estilo documentada no guia de convenções. Sempre opera dentro das regras específicas do projeto. Ativado pelo orchestrator do TRUST durante a execução do review.
 license: MIT
 compatibility: Designed for Claude Code. Requires TRUST_SETUP_PATH env var pointing to a valid TRUST setup repo. Python 3.11+ for scripts.
 metadata:

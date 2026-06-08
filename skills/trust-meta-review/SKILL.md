@@ -1,6 +1,6 @@
 ---
 name: trust-meta-review
-description: Performs the Meta-Review (anti-hallucination) phase of the TRUST framework. Validates every finding from all specialist agents against the actual diff content. Verifies that evidence_quote is literal, rule_source resolves to real grounding, and claim does not exceed what the evidence supports. Use when the orchestrator reaches Phase 5. Intercepts hallucinated findings before they reach the developer.
+description: Executa a fase de Meta-Review (anti-alucinação) do framework TRUST. Valida cada finding de todos os agentes especialistas contra o conteúdo real do diff. Verifica se evidence_quote é literal, se rule_source resolve para um grounding real e se o claim não extrapola o que a evidência suporta. Use quando o orchestrator chega na Fase 5. Intercepta findings alucinados antes de chegarem ao desenvolvedor.
 license: MIT
 compatibility: Designed for Claude Code. Requires TRUST_SETUP_PATH env var pointing to a valid TRUST setup repo. Reads all agent findings.json from the run directory.
 metadata:

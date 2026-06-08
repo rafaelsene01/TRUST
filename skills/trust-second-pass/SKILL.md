@@ -1,6 +1,6 @@
 ---
 name: trust-second-pass
-description: Performs the Second Pass phase of the TRUST framework. Verifies that every diff hunk has been accounted for by at least one specialist agent — either as a finding or as an explicitly cleared non-finding. Use when the orchestrator reaches Phase 3 after all specialist agents have completed. Triggers HALT if any hunk is unaccounted for.
+description: Executa a fase de Second Pass do framework TRUST. Verifica se cada hunk do diff foi coberto por pelo menos um agente especialista — seja como finding ou como não-finding explicitamente liberado. Use quando o orchestrator chega na Fase 3 após todos os agentes especialistas terem concluído. Dispara HALT se algum hunk não estiver coberto.
 license: MIT
 compatibility: Designed for Claude Code. Requires TRUST_SETUP_PATH env var pointing to a valid TRUST setup repo. Reads from completed agent outputs in the run directory.
 metadata:

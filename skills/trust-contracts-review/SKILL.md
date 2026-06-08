@@ -1,6 +1,6 @@
 ---
 name: trust-contracts-review
-description: Reviews pull request diffs for API contract violations defined in the project's contract spec and grounding documents. Use when analyzing code changes for breaking changes, schema regressions, missing versioning, backward-incompatible field additions, or deviations from documented API contracts. Always operates within project-specific rules. Activated by the TRUST orchestrator during PR review execution.
+description: Revisa diffs de pull request em busca de violações de contrato de API definidas no contract spec e nos documentos de grounding do projeto. Use ao analisar mudanças de código para breaking changes, regressões de schema, versionamento ausente, adições de campo incompatíveis ou desvios dos contratos documentados. Sempre opera dentro das regras específicas do projeto. Ativado pelo orchestrator do TRUST durante a execução do review.
 license: MIT
 compatibility: Designed for Claude Code. Requires TRUST_SETUP_PATH env var pointing to a valid TRUST setup repo. Python 3.11+ for scripts.
 metadata:

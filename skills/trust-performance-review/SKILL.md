@@ -1,6 +1,6 @@
 ---
 name: trust-performance-review
-description: Reviews pull request diffs for performance violations defined in the project's performance policy and grounding documents. Use when analyzing code changes for N+1 queries, missing indexes, unbounded queries, missing timeouts, synchronous blocking operations, or memory hotspots. Always operates within project-specific rules. Activated by the TRUST orchestrator during PR review execution.
+description: Revisa diffs de pull request em busca de violações de performance definidas na política de performance e nos documentos de grounding do projeto. Use ao analisar mudanças de código para queries N+1, índices ausentes, queries sem limite, timeouts faltando, operações síncronas bloqueantes ou hotspots de memória. Sempre opera dentro das regras específicas do projeto. Ativado pelo orchestrator do TRUST durante a execução do review.
 license: MIT
 compatibility: Designed for Claude Code. Requires TRUST_SETUP_PATH env var pointing to a valid TRUST setup repo. Python 3.11+ for scripts.
 metadata:
